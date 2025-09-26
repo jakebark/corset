@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/jakebark/corset/internal/config"
 	"github.com/jakebark/corset/internal/inputs"
 )
 
@@ -94,9 +95,9 @@ func (p *Processor) extractIndividualPolicies(filename string) []PolicyStatement
 // replace this with flat value
 func (p *Processor) calculateBaseSize() int {
 	if p.userInput.Whitespace {
-		return len(SCPBaseWithWS) - 2 // Subtract the [] from Statement
+		return len(config.SCPBaseWithWS) - 2 // Subtract the [] from Statement
 	}
-	return len(SCPBaseStructure) - 2 // Subtract the [] from Statement
+	return len(config.SCPBaseStructure) - 2 // Subtract the [] from Statement
 }
 
 // first fit / bin pack
@@ -126,7 +127,7 @@ func (p *Processor) packPolicies(statements []PolicyStatement, baseSize int) [][
 				separator = 1 // for comma
 			}
 
-			if fileSizes[i]+stmt.Size+separator <= MaxPolicySize {
+			if fileSizes[i]+stmt.Size+separator <= config.MaxPolicySize {
 				files[i] = append(files[i], stmt)
 				fileSizes[i] += stmt.Size + separator
 				placed = true
@@ -170,7 +171,7 @@ func (p *Processor) generateSingleFile(packedFiles [][]PolicyStatement, original
 	if len(packedFiles) == 1 {
 		// Single file output
 		base := strings.TrimSuffix(originalFile, ".json")
-		filename := base + CorsetSuffix + ".json"
+		filename := base + config.CorsetSuffix + ".json"
 
 		size := p.writeOutputFile(filename, packedFiles[0])
 
@@ -181,7 +182,7 @@ func (p *Processor) generateSingleFile(packedFiles [][]PolicyStatement, original
 
 		base := strings.TrimSuffix(originalFile, ".json")
 		for i, statements := range packedFiles {
-			filename := fmt.Sprintf("%s%s%d.json", base, CorsetSuffix, i+1)
+			filename := fmt.Sprintf("%s%s%d.json", base, config.CorsetSuffix, i+1)
 			size := p.writeOutputFile(filename, statements)
 			fmt.Printf("- %s (%d characters, %d statements)\n",
 				filepath.Base(filename), size, len(statements))
