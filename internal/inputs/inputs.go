@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/jakebark/corset/internal/core"
+	"github.com/jakebark/corset/internal/config"
 	"github.com/spf13/pflag"
 )
 
@@ -39,6 +39,6 @@ func ParseFlags() UserInput {
 		Delete:      delete,
 		Whitespace:  whitespace,
 		IsDirectory: isDirectory(target),
-		MaxFiles:    core.DefaultMaxFiles,
+		MaxFiles:    config.DefaultMaxFiles,
 	}
 }

@@ -1,4 +1,4 @@
-package core
+package config
 
 const (
 	// DefaultMaxFiles is the default maximum number of files to split policies across
