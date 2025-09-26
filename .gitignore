@@ -14,3 +14,6 @@ wheels/
 *.egg-info
 
 .claude
+
+*.test
+**/test/*
