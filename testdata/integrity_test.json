@@ -1,0 +1,65 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Statement0",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-0/*"
+    },
+    {
+      "Sid": "Statement1", 
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-1/*"
+    },
+    {
+      "Sid": "Statement2",
+      "Effect": "Allow", 
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-2/*"
+    },
+    {
+      "Sid": "Statement3",
+      "Effect": "Allow",
+      "Action": "s3:GetObject", 
+      "Resource": "arn:aws:s3:::bucket-3/*"
+    },
+    {
+      "Sid": "Statement4",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-4/*"
+    },
+    {
+      "Sid": "Statement5",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-5/*"
+    },
+    {
+      "Sid": "Statement6",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-6/*"
+    },
+    {
+      "Sid": "Statement7",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-7/*"
+    },
+    {
+      "Sid": "Statement8",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-8/*"
+    },
+    {
+      "Sid": "Statement9",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::bucket-9/*"
+    }
+  ]
+}

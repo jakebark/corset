@@ -1,0 +1,224 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowS3Read",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::production-data-bucket/*",
+        "arn:aws:s3:::production-data-bucket"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:userid": "AIDACKCEVSQ6C2EXAMPLE:user@company.com"
+        },
+        "DateGreaterThan": {
+          "aws:CurrentTime": "2023-01-01T00:00:00Z"
+        }
+      }
+    },
+    {
+      "Sid": "AllowS3Write",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:PutObjectAcl"
+      ],
+      "Resource": "arn:aws:s3:::production-data-bucket/uploads/*",
+      "Condition": {
+        "StringLike": {
+          "s3:x-amz-content-sha256": "*"
+        }
+      }
+    },
+    {
+      "Sid": "AllowEC2ReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeImages",
+        "ec2:DescribeSnapshots",
+        "ec2:DescribeVolumes",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeKeyPairs",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeVpcs"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowRDSRead",
+      "Effect": "Allow",
+      "Action": [
+        "rds:DescribeDBInstances",
+        "rds:DescribeDBClusters",
+        "rds:DescribeDBSnapshots",
+        "rds:DescribeDBClusterSnapshots"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": [
+            "us-east-1",
+            "us-west-2"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "AllowLambdaInvoke",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:InvokeFunction",
+        "lambda:InvokeAsync"
+      ],
+      "Resource": [
+        "arn:aws:lambda:us-east-1:123456789012:function:ProcessDataFunction",
+        "arn:aws:lambda:us-west-2:123456789012:function:ProcessDataFunction"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "lambda:FunctionTag/Environment": "production"
+        }
+      }
+    },
+    {
+      "Sid": "AllowCloudWatchLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ],
+      "Resource": "arn:aws:logs:*:123456789012:log-group:/aws/lambda/*"
+    },
+    {
+      "Sid": "AllowSNSPublish",
+      "Effect": "Allow",
+      "Action": [
+        "sns:Publish",
+        "sns:GetTopicAttributes"
+      ],
+      "Resource": [
+        "arn:aws:sns:us-east-1:123456789012:notifications-topic",
+        "arn:aws:sns:us-west-2:123456789012:notifications-topic"
+      ]
+    },
+    {
+      "Sid": "AllowSQSAccess",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:SendMessage",
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes"
+      ],
+      "Resource": [
+        "arn:aws:sqs:us-east-1:123456789012:processing-queue",
+        "arn:aws:sqs:us-west-2:123456789012:processing-queue"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:SourceAccount": "123456789012"
+        }
+      }
+    },
+    {
+      "Sid": "AllowDynamoDBAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Query",
+        "dynamodb:Scan"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:us-east-1:123456789012:table/UserProfiles",
+        "arn:aws:dynamodb:us-east-1:123456789012:table/UserProfiles/index/*",
+        "arn:aws:dynamodb:us-west-2:123456789012:table/UserProfiles",
+        "arn:aws:dynamodb:us-west-2:123456789012:table/UserProfiles/index/*"
+      ]
+    },
+    {
+      "Sid": "AllowSecretsManagerAccess",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:us-east-1:123456789012:secret:production/database/credentials-*",
+        "arn:aws:secretsmanager:us-west-2:123456789012:secret:production/database/credentials-*"
+      ]
+    },
+    {
+      "Sid": "AllowKMSDecrypt",
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt",
+        "kms:DescribeKey"
+      ],
+      "Resource": [
+        "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+        "arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012"
+      ]
+    },
+    {
+      "Sid": "AllowIAMPassRole",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::123456789012:role/LambdaExecutionRole",
+        "arn:aws:iam::123456789012:role/EC2InstanceRole"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": [
+            "lambda.amazonaws.com",
+            "ec2.amazonaws.com"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "AllowCloudFormationRead",
+      "Effect": "Allow",
+      "Action": [
+        "cloudformation:DescribeStacks",
+        "cloudformation:DescribeStackResources",
+        "cloudformation:DescribeStackEvents",
+        "cloudformation:GetTemplate"
+      ],
+      "Resource": "arn:aws:cloudformation:*:123456789012:stack/production-*/*"
+    },
+    {
+      "Sid": "AllowRoute53Read",
+      "Effect": "Allow",
+      "Action": [
+        "route53:ListHostedZones",
+        "route53:GetHostedZone",
+        "route53:ListResourceRecordSets"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AllowACMRead",
+      "Effect": "Allow",
+      "Action": [
+        "acm:ListCertificates",
+        "acm:DescribeCertificate"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

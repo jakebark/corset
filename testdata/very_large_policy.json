@@ -1,0 +1,110 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Statement0",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-0/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-0"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-0"}}
+    },
+    {
+      "Sid": "Statement1",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-1/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-1"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-1"}}
+    },
+    {
+      "Sid": "Statement2",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-2/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-2"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-2"}}
+    },
+    {
+      "Sid": "Statement3",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-3/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-3"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-3"}}
+    },
+    {
+      "Sid": "Statement4",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-4/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-4"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-4"}}
+    },
+    {
+      "Sid": "Statement5",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-5/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-5"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-5"}}
+    },
+    {
+      "Sid": "Statement6",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-6/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-6"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-6"}}
+    },
+    {
+      "Sid": "Statement7",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-7/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-7"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-7"}}
+    },
+    {
+      "Sid": "Statement8",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-8/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-8"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-8"}}
+    },
+    {
+      "Sid": "Statement9",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-9/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-9"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-9"}}
+    },
+    {
+      "Sid": "Statement10",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-10/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-10"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-10"}}
+    },
+    {
+      "Sid": "Statement11",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-11/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-11"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-11"}}
+    },
+    {
+      "Sid": "Statement12",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-12/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-12"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-12"}}
+    },
+    {
+      "Sid": "Statement13",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-13/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-13"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-13"}}
+    },
+    {
+      "Sid": "Statement14",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation"],
+      "Resource": ["arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-14/*", "arn:aws:s3:::very-long-bucket-name-that-takes-up-significant-space-14"],
+      "Condition": {"StringEquals": {"aws:userid": "AIDACKCEVSQ6C2EXAMPLE:very-long-user-identifier-that-consumes-lots-of-characters-14"}}
+    }
+  ]
+}
