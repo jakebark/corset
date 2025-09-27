@@ -93,9 +93,7 @@ func TestProcessor_extractIndividualPolicies(t *testing.T) {
 				if stmt.Size <= 0 {
 					t.Errorf("Statement %d has invalid size: %d", i, stmt.Size)
 				}
-				if stmt.OriginalFilename != testFile {
-					t.Errorf("Statement %d has wrong filename: %s", i, stmt.OriginalFilename)
-				}
+				// OriginalFilename field removed for simplification
 			}
 		})
 	}
@@ -152,35 +150,33 @@ func TestProcessor_writeOutputFile(t *testing.T) {
 	tests := []struct {
 		name       string
 		whitespace bool
-		statements []PolicyStatement
+		statements []Statement
 	}{
 		{
 			name:       "Single statement with whitespace",
 			whitespace: true,
-			statements: []PolicyStatement{
+			statements: []Statement{
 				{
 					Content: map[string]interface{}{
 						"Effect":   "Allow",
 						"Action":   "s3:GetObject",
 						"Resource": "*",
 					},
-					Size:             50,
-					OriginalFilename: "test.json",
+					Size: 50,
 				},
 			},
 		},
 		{
 			name:       "Multiple statements without whitespace",
 			whitespace: false,
-			statements: []PolicyStatement{
+			statements: []Statement{
 				{
 					Content: map[string]interface{}{
 						"Effect":   "Allow",
 						"Action":   "s3:GetObject",
 						"Resource": "*",
 					},
-					Size:             50,
-					OriginalFilename: "test.json",
+					Size: 50,
 				},
 				{
 					Content: map[string]interface{}{
@@ -188,8 +184,7 @@ func TestProcessor_writeOutputFile(t *testing.T) {
 						"Action":   "s3:DeleteObject",
 						"Resource": "*",
 					},
-					Size:             50,
-					OriginalFilename: "test.json",
+					Size: 50,
 				},
 			},
 		},
@@ -260,16 +255,16 @@ func TestProcessor_writeOutputFile(t *testing.T) {
 func TestProcessor_packPolicies(t *testing.T) {
 	tests := []struct {
 		name          string
-		statements    []PolicyStatement
+		statements    []Statement
 		baseSize      int
 		maxFiles      int
 		expectedFiles int
 	}{
 		{
 			name: "Small statements fit in one file",
-			statements: []PolicyStatement{
-				{Content: map[string]interface{}{"Effect": "Allow"}, Size: 100, OriginalFilename: "test.json"},
-				{Content: map[string]interface{}{"Effect": "Deny"}, Size: 100, OriginalFilename: "test.json"},
+			statements: []Statement{
+				{Content: map[string]interface{}{"Effect": "Allow"}, Size: 100},
+				{Content: map[string]interface{}{"Effect": "Deny"}, Size: 100},
 			},
 			baseSize:      50,
 			maxFiles:      5,
@@ -277,9 +272,9 @@ func TestProcessor_packPolicies(t *testing.T) {
 		},
 		{
 			name: "Large statements require multiple files",
-			statements: []PolicyStatement{
-				{Content: map[string]interface{}{"Effect": "Allow"}, Size: 3000, OriginalFilename: "test.json"},
-				{Content: map[string]interface{}{"Effect": "Deny"}, Size: 3000, OriginalFilename: "test.json"},
+			statements: []Statement{
+				{Content: map[string]interface{}{"Effect": "Allow"}, Size: 3000},
+				{Content: map[string]interface{}{"Effect": "Deny"}, Size: 3000},
 			},
 			baseSize:      50,
 			maxFiles:      5,

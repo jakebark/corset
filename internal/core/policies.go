@@ -17,10 +17,9 @@ type Policy struct {
 	Statement []map[string]interface{} `json:"Statement"`
 }
 
-type PolicyStatement struct {
-	Content          map[string]interface{}
-	Size             int // character count
-	OriginalFilename string
+type Statement struct {
+	Content map[string]interface{}
+	Size    int
 }
 
 type Processor struct {
@@ -42,8 +41,8 @@ func (p *Processor) ProcessFiles(files []string) {
 	p.writeOutputFiles(packedFiles, files)
 }
 
-func (p *Processor) extractAllStatements(files []string) []PolicyStatement {
-	var allStatements []PolicyStatement
+func (p *Processor) extractAllStatements(files []string) []Statement {
+	var allStatements []Statement
 	for _, file := range files {
 		statements := p.extractIndividualPolicies(file)
 		allStatements = append(allStatements, statements...)
@@ -51,7 +50,7 @@ func (p *Processor) extractAllStatements(files []string) []PolicyStatement {
 	return allStatements
 }
 
-func (p *Processor) packAllStatements(statements []PolicyStatement) [][]PolicyStatement {
+func (p *Processor) packAllStatements(statements []Statement) [][]Statement {
 	baseSize := config.SCPBaseSizeMinified
 	if p.userInput.Whitespace {
 		baseSize = config.SCPBaseSizeWithWS
@@ -59,7 +58,7 @@ func (p *Processor) packAllStatements(statements []PolicyStatement) [][]PolicySt
 	return p.packPolicies(statements, baseSize)
 }
 
-func (p *Processor) writeOutputFiles(packedFiles [][]PolicyStatement, inputFiles []string) {
+func (p *Processor) writeOutputFiles(packedFiles [][]Statement, inputFiles []string) {
 	outputDir := filepath.Dir(inputFiles[0])
 	if len(inputFiles) > 1 {
 		p.generateMultipleFiles(packedFiles, outputDir)
@@ -68,20 +67,19 @@ func (p *Processor) writeOutputFiles(packedFiles [][]PolicyStatement, inputFiles
 	}
 }
 
-func (p *Processor) extractIndividualPolicies(filename string) []PolicyStatement {
+func (p *Processor) extractIndividualPolicies(filename string) []Statement {
 	data, _ := os.ReadFile(filename)
 
 	var policy Policy
 	json.Unmarshal(data, &policy)
 
-	var statements []PolicyStatement
+	var statements []Statement
 	for _, stmt := range policy.Statement {
 		stmtJSON, _ := json.Marshal(stmt)
 
-		statements = append(statements, PolicyStatement{
-			Content:          stmt,
-			Size:             len(stmtJSON),
-			OriginalFilename: filename,
+		statements = append(statements, Statement{
+			Content: stmt,
+			Size:    len(stmtJSON),
 		})
 	}
 
@@ -89,13 +87,13 @@ func (p *Processor) extractIndividualPolicies(filename string) []PolicyStatement
 }
 
 // first fit / bin pack
-func (p *Processor) packPolicies(statements []PolicyStatement, baseSize int) [][]PolicyStatement {
+func (p *Processor) packPolicies(statements []Statement, baseSize int) [][]Statement {
 	// Sort policies by size (largest first) for better bin packing
 	sort.Slice(statements, func(i, j int) bool {
 		return statements[i].Size > statements[j].Size
 	})
 
-	files := make([][]PolicyStatement, p.userInput.MaxFiles)
+	files := make([][]Statement, p.userInput.MaxFiles)
 	fileSizes := make([]int, p.userInput.MaxFiles)
 
 	// Initialize each file with base structure size
@@ -129,7 +127,7 @@ func (p *Processor) packPolicies(statements []PolicyStatement, baseSize int) [][
 	}
 
 	// Remove empty files
-	var result [][]PolicyStatement
+	var result [][]Statement
 	for _, file := range files {
 		if len(file) > 0 {
 			result = append(result, file)
@@ -139,7 +137,7 @@ func (p *Processor) packPolicies(statements []PolicyStatement, baseSize int) [][
 	return result
 }
 
-func (p *Processor) generateMultipleFiles(packedFiles [][]PolicyStatement, outputDir string) {
+func (p *Processor) generateMultipleFiles(packedFiles [][]Statement, outputDir string) {
 	fmt.Printf("Split into %d files:\n", len(packedFiles))
 
 	for i, statements := range packedFiles {
@@ -155,7 +153,7 @@ func (p *Processor) generateMultipleFiles(packedFiles [][]PolicyStatement, outpu
 	}
 }
 
-func (p *Processor) generateSingleFile(packedFiles [][]PolicyStatement, originalFile string) {
+func (p *Processor) generateSingleFile(packedFiles [][]Statement, originalFile string) {
 	if len(packedFiles) == 1 {
 		// Single file output
 		base := strings.TrimSuffix(originalFile, ".json")
@@ -182,7 +180,7 @@ func (p *Processor) generateSingleFile(packedFiles [][]PolicyStatement, original
 	}
 }
 
-func (p *Processor) writeOutputFile(filename string, statements []PolicyStatement) int {
+func (p *Processor) writeOutputFile(filename string, statements []Statement) int {
 	policy := Policy{
 		Version:   "2012-10-17",
 		Statement: make([]map[string]interface{}, len(statements)),
