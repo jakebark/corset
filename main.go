@@ -19,7 +19,5 @@ func main() {
 		files = []string{userInput.Target}
 	}
 
-	processor := core.NewProcessor(userInput)
-
-	processor.ProcessFiles(files)
+	core.ProcessFiles(userInput, files)
 }

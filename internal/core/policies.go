@@ -21,35 +21,27 @@ type Statement struct {
 	Size    int
 }
 
-type Processor struct {
-	userInput inputs.UserInput
-}
-
-func NewProcessor(userInput inputs.UserInput) *Processor {
-	return &Processor{userInput: userInput}
-}
-
-func (p *Processor) ProcessFiles(files []string) {
-	allStatements := p.extractAllStatements(files)
+func ProcessFiles(userInput inputs.UserInput, files []string) {
+	allStatements := extractAllStatements(files)
 	if len(allStatements) == 0 {
 		fmt.Println("No policy statements found")
 		return
 	}
 
-	packedFiles := p.packAllStatements(allStatements)
-	p.writeOutputFiles(packedFiles, files)
+	packedFiles := packAllStatements(userInput, allStatements)
+	writeOutputFiles(userInput, packedFiles, files)
 }
 
-func (p *Processor) extractAllStatements(files []string) []Statement {
+func extractAllStatements(files []string) []Statement {
 	var allStatements []Statement
 	for _, file := range files {
-		statements := p.extractIndividualPolicies(file)
+		statements := extractIndividualPolicies(file)
 		allStatements = append(allStatements, statements...)
 	}
 	return allStatements
 }
 
-func (p *Processor) extractIndividualPolicies(filename string) []Statement {
+func extractIndividualPolicies(filename string) []Statement {
 	data, _ := os.ReadFile(filename)
 
 	var policy Policy
@@ -68,23 +60,23 @@ func (p *Processor) extractIndividualPolicies(filename string) []Statement {
 	return statements
 }
 
-func (p *Processor) packAllStatements(statements []Statement) [][]Statement {
+func packAllStatements(userInput inputs.UserInput, statements []Statement) [][]Statement {
 	baseSize := config.SCPBaseSizeMinified
-	if p.userInput.Whitespace {
+	if userInput.Whitespace {
 		baseSize = config.SCPBaseSizeWithWS
 	}
-	return p.packPolicies(statements, baseSize)
+	return packPolicies(userInput, statements, baseSize)
 }
 
 // first fit / bin pack
-func (p *Processor) packPolicies(statements []Statement, baseSize int) [][]Statement {
+func packPolicies(userInput inputs.UserInput, statements []Statement, baseSize int) [][]Statement {
 	// Sort policies by size (largest first) for better bin packing
 	sort.Slice(statements, func(i, j int) bool {
 		return statements[i].Size > statements[j].Size
 	})
 
-	files := make([][]Statement, p.userInput.MaxFiles)
-	fileSizes := make([]int, p.userInput.MaxFiles)
+	files := make([][]Statement, userInput.MaxFiles)
+	fileSizes := make([]int, userInput.MaxFiles)
 
 	// Initialize each file with base structure size
 	for i := range fileSizes {
@@ -96,7 +88,7 @@ func (p *Processor) packPolicies(statements []Statement, baseSize int) [][]State
 		placed := false
 
 		// Try to place in existing file with space
-		for i := 0; i < p.userInput.MaxFiles; i++ {
+		for i := 0; i < userInput.MaxFiles; i++ {
 			// Account for comma separator (except for first statement)
 			separator := 0
 			if len(files[i]) > 0 {
@@ -128,18 +120,18 @@ func (p *Processor) packPolicies(statements []Statement, baseSize int) [][]State
 }
 
 
-func (p *Processor) writeOutputFiles(packedFiles [][]Statement, inputFiles []string) {
+func writeOutputFiles(userInput inputs.UserInput, packedFiles [][]Statement, inputFiles []string) {
 	outputDir := filepath.Dir(inputFiles[0])
 	
 	fmt.Printf("Split into %d files:\n", len(packedFiles))
 	for i, statements := range packedFiles {
 		filename := filepath.Join(outputDir, fmt.Sprintf("corset%d.json", i+1))
-		size := p.writeOutputFile(filename, statements)
+		size := writeOutputFile(userInput, filename, statements)
 		fmt.Printf("- %s (%d characters, %d statements)\n", filepath.Base(filename), size, len(statements))
 	}
 	
-	if p.userInput.Delete {
-		if p.userInput.IsDirectory {
+	if userInput.Delete {
+		if userInput.IsDirectory {
 			fmt.Println("Note: --delete flag not implemented for directory processing yet")
 		} else {
 			os.Remove(inputFiles[0])
@@ -148,7 +140,7 @@ func (p *Processor) writeOutputFiles(packedFiles [][]Statement, inputFiles []str
 }
 
 
-func (p *Processor) writeOutputFile(filename string, statements []Statement) int {
+func writeOutputFile(userInput inputs.UserInput, filename string, statements []Statement) int {
 	policy := Policy{
 		Version:   "2012-10-17",
 		Statement: make([]map[string]interface{}, len(statements)),
@@ -160,7 +152,7 @@ func (p *Processor) writeOutputFile(filename string, statements []Statement) int
 
 	var data []byte
 
-	if p.userInput.Whitespace {
+	if userInput.Whitespace {
 		data, _ = json.MarshalIndent(policy, "", "  ")
 	} else {
 		data, _ = json.Marshal(policy)

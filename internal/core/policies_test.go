@@ -70,16 +70,7 @@ func TestProcessor_extractIndividualPolicies(t *testing.T) {
 			}
 			
 			// Test the function
-			userInput := inputs.UserInput{
-				Target:      testFile,
-				Delete:      false,
-				Whitespace:  false,
-				IsDirectory: false,
-				MaxFiles:    config.DefaultMaxFiles,
-			}
-			
-			processor := NewProcessor(userInput)
-			statements := processor.extractIndividualPolicies(testFile)
+			statements := extractIndividualPolicies(testFile)
 			
 			if len(statements) != tt.expectedStatements {
 				t.Errorf("Expected %d statements, got %d", tt.expectedStatements, len(statements))
@@ -203,8 +194,7 @@ func TestProcessor_writeOutputFile(t *testing.T) {
 				MaxFiles:    config.DefaultMaxFiles,
 			}
 			
-			processor := NewProcessor(userInput)
-			size := processor.writeOutputFile(outputFile, tt.statements)
+			size := writeOutputFile(userInput, outputFile, tt.statements)
 			
 			// Verify file was created
 			if _, err := os.Stat(outputFile); os.IsNotExist(err) {
@@ -292,8 +282,7 @@ func TestProcessor_packPolicies(t *testing.T) {
 				MaxFiles:    tt.maxFiles,
 			}
 			
-			processor := NewProcessor(userInput)
-			result := processor.packPolicies(tt.statements, tt.baseSize)
+			result := packPolicies(userInput, tt.statements, tt.baseSize)
 			
 			if len(result) != tt.expectedFiles {
 				t.Errorf("Expected %d files, got %d", tt.expectedFiles, len(result))

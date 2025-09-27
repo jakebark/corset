@@ -119,8 +119,7 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 				files = []string{targetPath}
 			}
 
-			processor := core.NewProcessor(userInput)
-			processor.ProcessFiles(files)
+			core.ProcessFiles(userInput, files)
 
 			// Verify results
 			outputFiles := findOutputFiles(tempDir, tt.isDirectory, filepath.Base(targetPath))
