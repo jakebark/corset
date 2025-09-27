@@ -21,4 +21,10 @@ const (
   "Version": "2012-10-17",
   "Statement": []
 }`
+
+	// SCPBaseSizeMinified is the character overhead for minified SCP structure (minus Statement array)
+	SCPBaseSizeMinified = 37 // len(SCPBaseStructure) - 2 for []
+
+	// SCPBaseSizeWithWS is the character overhead for formatted SCP structure (minus Statement array)
+	SCPBaseSizeWithWS = 46 // len(SCPBaseWithWS) - 2 for []
 )

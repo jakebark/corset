@@ -101,7 +101,7 @@ func TestProcessor_extractIndividualPolicies(t *testing.T) {
 	}
 }
 
-func TestProcessor_calculateBaseSize(t *testing.T) {
+func TestBaseSizeConstants(t *testing.T) {
 	tests := []struct {
 		name       string
 		whitespace bool
@@ -110,30 +110,39 @@ func TestProcessor_calculateBaseSize(t *testing.T) {
 		{
 			name:       "With whitespace",
 			whitespace: true,
-			expected:   len(config.SCPBaseWithWS) - 2, // Subtract the [] from Statement
+			expected:   config.SCPBaseSizeWithWS,
 		},
 		{
 			name:       "Without whitespace",
 			whitespace: false,
-			expected:   len(config.SCPBaseStructure) - 2, // Subtract the [] from Statement
+			expected:   config.SCPBaseSizeMinified,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			userInput := inputs.UserInput{
-				Target:      "/test",
-				Delete:      false,
-				Whitespace:  tt.whitespace,
-				IsDirectory: false,
-				MaxFiles:    config.DefaultMaxFiles,
+			var result int
+			if tt.whitespace {
+				result = config.SCPBaseSizeWithWS
+			} else {
+				result = config.SCPBaseSizeMinified
 			}
-			
-			processor := NewProcessor(userInput)
-			result := processor.calculateBaseSize()
 			
 			if result != tt.expected {
 				t.Errorf("Expected base size %d, got %d", tt.expected, result)
+			}
+			
+			// Verify constants match actual string lengths
+			if tt.whitespace {
+				actualSize := len(config.SCPBaseWithWS) - 2
+				if result != actualSize {
+					t.Errorf("Constant SCPBaseSizeWithWS (%d) doesn't match actual size (%d)", result, actualSize)
+				}
+			} else {
+				actualSize := len(config.SCPBaseStructure) - 2
+				if result != actualSize {
+					t.Errorf("Constant SCPBaseSizeMinified (%d) doesn't match actual size (%d)", result, actualSize)
+				}
 			}
 		})
 	}

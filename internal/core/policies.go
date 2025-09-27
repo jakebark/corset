@@ -56,7 +56,10 @@ func (p *Processor) ProcessFiles(files []string) {
 	}
 
 	// Calculate base structure size
-	baseSize := p.calculateBaseSize()
+	baseSize := config.SCPBaseSizeMinified
+	if p.userInput.Whitespace {
+		baseSize = config.SCPBaseSizeWithWS
+	}
 
 	// Pack policies into files using bin packing algorithm
 	packedFiles := p.packPolicies(allStatements, baseSize)
@@ -92,13 +95,6 @@ func (p *Processor) extractIndividualPolicies(filename string) []PolicyStatement
 	return statements
 }
 
-// replace this with flat value
-func (p *Processor) calculateBaseSize() int {
-	if p.userInput.Whitespace {
-		return len(config.SCPBaseWithWS) - 2 // Subtract the [] from Statement
-	}
-	return len(config.SCPBaseStructure) - 2 // Subtract the [] from Statement
-}
 
 // first fit / bin pack
 func (p *Processor) packPolicies(statements []PolicyStatement, baseSize int) [][]PolicyStatement {
