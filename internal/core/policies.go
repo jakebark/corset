@@ -32,46 +32,58 @@ func NewProcessor(userInput inputs.UserInput) *Processor {
 }
 
 func (p *Processor) ProcessFiles(files []string) {
-	// Get user confirmation for destructive operations
-	if p.userInput.Delete {
-		fmt.Print("This will delete the original files. Continue? (y/N): ")
-		var response string
-		fmt.Scanln(&response)
-		if response != "y" && response != "Y" {
-			fmt.Println("Operation cancelled.")
-		}
+	if !p.confirmDeletion() {
+		return
 	}
-
-	// Collect all policies from all files
-	allStatements := []PolicyStatement{}
-
-	for _, file := range files {
-		statements := p.extractIndividualPolicies(file)
-		allStatements = append(allStatements, statements...)
-	}
-
+	
+	allStatements := p.extractAllStatements(files)
 	if len(allStatements) == 0 {
 		fmt.Println("No policy statements found")
 		return
 	}
+	
+	packedFiles := p.packAllStatements(allStatements)
+	p.writeOutputFiles(packedFiles, files)
+}
 
-	// Calculate base structure size
+func (p *Processor) confirmDeletion() bool {
+	if !p.userInput.Delete {
+		return true
+	}
+	
+	fmt.Print("This will delete the original files. Continue? (y/N): ")
+	var response string
+	fmt.Scanln(&response)
+	if response != "y" && response != "Y" {
+		fmt.Println("Operation cancelled.")
+		return false
+	}
+	return true
+}
+
+func (p *Processor) extractAllStatements(files []string) []PolicyStatement {
+	var allStatements []PolicyStatement
+	for _, file := range files {
+		statements := p.extractIndividualPolicies(file)
+		allStatements = append(allStatements, statements...)
+	}
+	return allStatements
+}
+
+func (p *Processor) packAllStatements(statements []PolicyStatement) [][]PolicyStatement {
 	baseSize := config.SCPBaseSizeMinified
 	if p.userInput.Whitespace {
 		baseSize = config.SCPBaseSizeWithWS
 	}
+	return p.packPolicies(statements, baseSize)
+}
 
-	// Pack policies into files using bin packing algorithm
-	packedFiles := p.packPolicies(allStatements, baseSize)
-
-	// Generate output files
-	outputDir := filepath.Dir(files[0])
-	if len(files) > 1 {
-		// Multiple input files, use corset1.json naming
+func (p *Processor) writeOutputFiles(packedFiles [][]PolicyStatement, inputFiles []string) {
+	outputDir := filepath.Dir(inputFiles[0])
+	if len(inputFiles) > 1 {
 		p.generateMultipleFiles(packedFiles, outputDir)
 	} else {
-		// Single input file, use filename_corset.json naming
-		p.generateSingleFile(packedFiles, files[0])
+		p.generateSingleFile(packedFiles, inputFiles[0])
 	}
 }
 
