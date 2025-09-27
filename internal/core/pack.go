@@ -63,5 +63,10 @@ func packPolicies(userInput inputs.UserInput, statements []Statement, baseSize i
 		}
 	}
 
+	// Return empty slice instead of nil for empty results
+	if result == nil {
+		result = [][]Statement{}
+	}
+
 	return result
 }
