@@ -50,23 +50,6 @@ func (p *Processor) extractAllStatements(files []string) []Statement {
 	return allStatements
 }
 
-func (p *Processor) packAllStatements(statements []Statement) [][]Statement {
-	baseSize := config.SCPBaseSizeMinified
-	if p.userInput.Whitespace {
-		baseSize = config.SCPBaseSizeWithWS
-	}
-	return p.packPolicies(statements, baseSize)
-}
-
-func (p *Processor) writeOutputFiles(packedFiles [][]Statement, inputFiles []string) {
-	outputDir := filepath.Dir(inputFiles[0])
-	if len(inputFiles) > 1 {
-		p.generateMultipleFiles(packedFiles, outputDir)
-	} else {
-		p.generateSingleFile(packedFiles, inputFiles[0])
-	}
-}
-
 func (p *Processor) extractIndividualPolicies(filename string) []Statement {
 	data, _ := os.ReadFile(filename)
 
@@ -84,6 +67,14 @@ func (p *Processor) extractIndividualPolicies(filename string) []Statement {
 	}
 
 	return statements
+}
+
+func (p *Processor) packAllStatements(statements []Statement) [][]Statement {
+	baseSize := config.SCPBaseSizeMinified
+	if p.userInput.Whitespace {
+		baseSize = config.SCPBaseSizeWithWS
+	}
+	return p.packPolicies(statements, baseSize)
 }
 
 // first fit / bin pack
@@ -150,6 +141,15 @@ func (p *Processor) generateMultipleFiles(packedFiles [][]Statement, outputDir s
 	if p.userInput.Delete {
 		// Would need to track original files to delete them
 		fmt.Println("Note: --delete flag not implemented for directory processing yet")
+	}
+}
+
+func (p *Processor) writeOutputFiles(packedFiles [][]Statement, inputFiles []string) {
+	outputDir := filepath.Dir(inputFiles[0])
+	if len(inputFiles) > 1 {
+		p.generateMultipleFiles(packedFiles, outputDir)
+	} else {
+		p.generateSingleFile(packedFiles, inputFiles[0])
 	}
 }
 
