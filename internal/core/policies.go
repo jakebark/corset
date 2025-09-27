@@ -32,33 +32,14 @@ func NewProcessor(userInput inputs.UserInput) *Processor {
 }
 
 func (p *Processor) ProcessFiles(files []string) {
-	if !p.confirmDeletion() {
-		return
-	}
-	
 	allStatements := p.extractAllStatements(files)
 	if len(allStatements) == 0 {
 		fmt.Println("No policy statements found")
 		return
 	}
-	
+
 	packedFiles := p.packAllStatements(allStatements)
 	p.writeOutputFiles(packedFiles, files)
-}
-
-func (p *Processor) confirmDeletion() bool {
-	if !p.userInput.Delete {
-		return true
-	}
-	
-	fmt.Print("This will delete the original files. Continue? (y/N): ")
-	var response string
-	fmt.Scanln(&response)
-	if response != "y" && response != "Y" {
-		fmt.Println("Operation cancelled.")
-		return false
-	}
-	return true
 }
 
 func (p *Processor) extractAllStatements(files []string) []PolicyStatement {
@@ -106,7 +87,6 @@ func (p *Processor) extractIndividualPolicies(filename string) []PolicyStatement
 
 	return statements
 }
-
 
 // first fit / bin pack
 func (p *Processor) packPolicies(statements []PolicyStatement, baseSize int) [][]PolicyStatement {
