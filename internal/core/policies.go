@@ -21,6 +21,12 @@ type Statement struct {
 	Size    int
 }
 
+type WriteResult struct {
+	Filename   string
+	Size       int
+	Statements int
+}
+
 func ProcessFiles(userInput inputs.UserInput, files []string) {
 	allStatements := extractAllStatements(files)
 	if len(allStatements) == 0 {
@@ -119,30 +125,36 @@ func packPolicies(userInput inputs.UserInput, statements []Statement, baseSize i
 	return result
 }
 
-
 func writeOutputFiles(userInput inputs.UserInput, packedFiles [][]Statement, inputFiles []string) {
 	outputDir := filepath.Dir(inputFiles[0])
-	
-	fmt.Printf("Split into %d files:\n", len(packedFiles))
+	results := writeAllPolicyFiles(userInput, packedFiles, outputDir)
+	reportResults(results)
+	deleteInputFiles(userInput, inputFiles)
+}
+
+func writeAllPolicyFiles(userInput inputs.UserInput, packedFiles [][]Statement, outputDir string) []WriteResult {
+	var results []WriteResult
 	for i, statements := range packedFiles {
 		filename := filepath.Join(outputDir, fmt.Sprintf("corset%d.json", i+1))
 		size := writeOutputFile(userInput, filename, statements)
-		fmt.Printf("- %s (%d characters, %d statements)\n", filepath.Base(filename), size, len(statements))
+		results = append(results, WriteResult{
+			Filename:   filename,
+			Size:       size,
+			Statements: len(statements),
+		})
 	}
-	
-	if userInput.Delete {
-		if userInput.IsDirectory {
-			fmt.Println("Note: --delete flag not implemented for directory processing yet")
-		} else {
-			os.Remove(inputFiles[0])
-		}
-	}
+	return results
 }
 
-
 func writeOutputFile(userInput inputs.UserInput, filename string, statements []Statement) int {
+	data := createPolicyJSON(userInput, statements)
+	os.WriteFile(filename, data, 0644)
+	return len(data)
+}
+
+func createPolicyJSON(userInput inputs.UserInput, statements []Statement) []byte {
 	policy := Policy{
-		Version:   "2012-10-17",
+		Version:   config.SCPVersion,
 		Statement: make([]map[string]interface{}, len(statements)),
 	}
 
@@ -150,15 +162,28 @@ func writeOutputFile(userInput inputs.UserInput, filename string, statements []S
 		policy.Statement[i] = stmt.Content
 	}
 
-	var data []byte
-
 	if userInput.Whitespace {
-		data, _ = json.MarshalIndent(policy, "", "  ")
-	} else {
-		data, _ = json.Marshal(policy)
+		data, _ := json.MarshalIndent(policy, "", "  ")
+		return data
 	}
+	data, _ := json.Marshal(policy)
+	return data
+}
 
-	os.WriteFile(filename, data, 0644)
+func reportResults(results []WriteResult) {
+	fmt.Printf("Split into %d files:\n", len(results))
+	for _, result := range results {
+		fmt.Printf("- %s (%d characters, %d statements)\n",
+			filepath.Base(result.Filename), result.Size, result.Statements)
+	}
+}
 
-	return len(data)
+func deleteInputFiles(userInput inputs.UserInput, inputFiles []string) {
+	if userInput.Delete {
+		if userInput.IsDirectory {
+			fmt.Println("Note: --delete flag not implemented for directory processing yet")
+		} else {
+			os.Remove(inputFiles[0])
+		}
+	}
 }

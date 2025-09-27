@@ -27,4 +27,7 @@ const (
 
 	// SCPBaseSizeWithWS is the character overhead for formatted SCP structure (minus Statement array)
 	SCPBaseSizeWithWS = 46 // len(SCPBaseWithWS) - 2 for []
+
+	// SCPVersion is the AWS SCP policy version
+	SCPVersion = "2012-10-17"
 )
