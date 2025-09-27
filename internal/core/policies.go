@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/jakebark/corset/internal/config"
 	"github.com/jakebark/corset/internal/inputs"
@@ -128,57 +127,26 @@ func (p *Processor) packPolicies(statements []Statement, baseSize int) [][]State
 	return result
 }
 
-func (p *Processor) generateMultipleFiles(packedFiles [][]Statement, outputDir string) {
-	fmt.Printf("Split into %d files:\n", len(packedFiles))
-
-	for i, statements := range packedFiles {
-		filename := filepath.Join(outputDir, fmt.Sprintf("corset%d.json", i+1))
-		size := p.writeOutputFile(filename, statements)
-		fmt.Printf("- %s (%d characters, %d statements)\n",
-			filepath.Base(filename), size, len(statements))
-	}
-
-	if p.userInput.Delete {
-		// Would need to track original files to delete them
-		fmt.Println("Note: --delete flag not implemented for directory processing yet")
-	}
-}
 
 func (p *Processor) writeOutputFiles(packedFiles [][]Statement, inputFiles []string) {
 	outputDir := filepath.Dir(inputFiles[0])
-	if len(inputFiles) > 1 {
-		p.generateMultipleFiles(packedFiles, outputDir)
-	} else {
-		p.generateSingleFile(packedFiles, inputFiles[0])
+	
+	fmt.Printf("Split into %d files:\n", len(packedFiles))
+	for i, statements := range packedFiles {
+		filename := filepath.Join(outputDir, fmt.Sprintf("corset%d.json", i+1))
+		size := p.writeOutputFile(filename, statements)
+		fmt.Printf("- %s (%d characters, %d statements)\n", filepath.Base(filename), size, len(statements))
 	}
-}
-
-func (p *Processor) generateSingleFile(packedFiles [][]Statement, originalFile string) {
-	if len(packedFiles) == 1 {
-		// Single file output
-		base := strings.TrimSuffix(originalFile, ".json")
-		filename := base + config.CorsetSuffix + ".json"
-
-		size := p.writeOutputFile(filename, packedFiles[0])
-
-		fmt.Printf("%s %d characters\n", filepath.Base(filename), size)
-	} else {
-		// Multiple files needed
-		fmt.Printf("Original Filename: %s\nSplit into %d files:\n", filepath.Base(originalFile), len(packedFiles))
-
-		base := strings.TrimSuffix(originalFile, ".json")
-		for i, statements := range packedFiles {
-			filename := fmt.Sprintf("%s%s%d.json", base, config.CorsetSuffix, i+1)
-			size := p.writeOutputFile(filename, statements)
-			fmt.Printf("- %s (%d characters, %d statements)\n",
-				filepath.Base(filename), size, len(statements))
+	
+	if p.userInput.Delete {
+		if p.userInput.IsDirectory {
+			fmt.Println("Note: --delete flag not implemented for directory processing yet")
+		} else {
+			os.Remove(inputFiles[0])
 		}
 	}
-
-	if p.userInput.Delete {
-		os.Remove(originalFile)
-	}
 }
+
 
 func (p *Processor) writeOutputFile(filename string, statements []Statement) int {
 	policy := Policy{

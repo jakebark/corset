@@ -205,27 +205,11 @@ func loadInputPolicies(t *testing.T, filenames []string) []TestPolicy {
 func findOutputFiles(tempDir string, isDirectory bool, baseName string) []string {
 	var outputFiles []string
 
-	if isDirectory {
-		// Look for corset1.json, corset2.json, etc.
-		for i := 1; i <= 5; i++ {
-			outputFile := filepath.Join(tempDir, fmt.Sprintf("corset%d.json", i))
-			if _, err := os.Stat(outputFile); err == nil {
-				outputFiles = append(outputFiles, outputFile)
-			}
-		}
-	} else {
-		// Look for filename_corset.json or filename_corset1.json, filename_corset2.json, etc.
-		baseNameNoExt := strings.TrimSuffix(baseName, ".json")
-		singleFile := filepath.Join(tempDir, baseNameNoExt+"_corset.json")
-		if _, err := os.Stat(singleFile); err == nil {
-			outputFiles = append(outputFiles, singleFile)
-		} else {
-			for i := 1; i <= 5; i++ {
-				outputFile := filepath.Join(tempDir, fmt.Sprintf("%s_corset%d.json", baseNameNoExt, i))
-				if _, err := os.Stat(outputFile); err == nil {
-					outputFiles = append(outputFiles, outputFile)
-				}
-			}
+	// Now all outputs use corset1.json, corset2.json, etc. regardless of input type
+	for i := 1; i <= 5; i++ {
+		outputFile := filepath.Join(tempDir, fmt.Sprintf("corset%d.json", i))
+		if _, err := os.Stat(outputFile); err == nil {
+			outputFiles = append(outputFiles, outputFile)
 		}
 	}
 
