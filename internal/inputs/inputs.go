@@ -26,7 +26,7 @@ func ParseFlags() UserInput {
 	var replace bool
 	var whitespace bool
 
-	pflag.BoolVarP(&replace, "replace", "d", false, "replace old files")
+	pflag.BoolVarP(&replace, "replace", "r", false, "replace old files")
 	pflag.BoolVarP(&whitespace, "whitespace", "w", false, "retain whitespace")
 	pflag.Parse()
 

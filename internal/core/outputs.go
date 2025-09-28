@@ -12,15 +12,25 @@ import (
 
 func writeOutputFiles(userInput inputs.UserInput, packedFiles [][]Statement, inputFiles []string) {
 	outputDir := filepath.Dir(inputFiles[0])
-	results := writeAllPolicyFiles(userInput, packedFiles, outputDir)
-	reportResults(results)
-	deleteInputFiles(userInput, inputFiles)
+	
+	// For single file replacement, we need special handling to avoid deleting before writing
+	if userInput.Replace && !userInput.IsDirectory && len(inputFiles) == 1 {
+		// Single file replacement: write to the same file (overwrite)
+		results := writeAllPolicyFiles(userInput, packedFiles, outputDir, inputFiles)
+		reportResults(results)
+		// No need to delete - we overwrote the file
+	} else {
+		// Normal processing or directory replacement
+		results := writeAllPolicyFiles(userInput, packedFiles, outputDir, inputFiles)
+		reportResults(results)
+		replaceInputFiles(userInput, inputFiles)
+	}
 }
 
-func writeAllPolicyFiles(userInput inputs.UserInput, packedFiles [][]Statement, outputDir string) []WriteResult {
+func writeAllPolicyFiles(userInput inputs.UserInput, packedFiles [][]Statement, outputDir string, inputFiles []string) []WriteResult {
 	var results []WriteResult
 	for i, statements := range packedFiles {
-		filename := filepath.Join(outputDir, fmt.Sprintf("corset%d.json", i+1))
+		filename := generateOutputFilename(userInput, outputDir, i+1, inputFiles)
 		size := writeOutputFile(userInput, filename, statements)
 		results = append(results, WriteResult{
 			Filename:   filename,
@@ -29,6 +39,25 @@ func writeAllPolicyFiles(userInput inputs.UserInput, packedFiles [][]Statement, 
 		})
 	}
 	return results
+}
+
+func generateOutputFilename(userInput inputs.UserInput, outputDir string, fileNum int, inputFiles []string) string {
+	if userInput.Replace {
+		if !userInput.IsDirectory && len(inputFiles) == 1 {
+			// Single file replacement - use original filename
+			return inputFiles[0]
+		} else if userInput.IsDirectory {
+			// Directory replacement - use target as base name with number suffix
+			baseName := filepath.Base(userInput.Target)
+			if fileNum == 1 {
+				return filepath.Join(outputDir, baseName+".json")
+			}
+			return filepath.Join(outputDir, fmt.Sprintf("%s-%d.json", baseName, fileNum))
+		}
+	}
+	
+	// Default corset naming convention
+	return filepath.Join(outputDir, fmt.Sprintf("corset%d.json", fileNum))
 }
 
 func createPolicyJSON(userInput inputs.UserInput, statements []Statement) []byte {
@@ -63,12 +92,10 @@ func writeOutputFile(userInput inputs.UserInput, filename string, statements []S
 	return len(data)
 }
 
-func deleteInputFiles(userInput inputs.UserInput, inputFiles []string) {
-	if userInput.Delete {
-		if userInput.IsDirectory {
-			fmt.Println("Note: --delete flag not implemented for directory processing yet")
-		} else {
-			os.Remove(inputFiles[0])
+func replaceInputFiles(userInput inputs.UserInput, inputFiles []string) {
+	if userInput.Replace {
+		for _, inputFile := range inputFiles {
+			os.Remove(inputFile)
 		}
 	}
 }

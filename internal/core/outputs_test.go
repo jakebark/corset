@@ -293,7 +293,9 @@ func TestWriteAllPolicyFiles(t *testing.T) {
 				t.Fatalf("Failed to create output directory: %v", err)
 			}
 			
-			results := writeAllPolicyFiles(tt.userInput, tt.packedFiles, outputDir)
+			// Create mock input files for testing
+			inputFiles := []string{filepath.Join(outputDir, "input.json")}
+			results := writeAllPolicyFiles(tt.userInput, tt.packedFiles, outputDir, inputFiles)
 			
 			if len(results) != tt.expected {
 				t.Errorf("Expected %d results, got %d", tt.expected, len(results))
@@ -380,35 +382,35 @@ func TestReportResults(t *testing.T) {
 	}
 }
 
-func TestDeleteInputFiles(t *testing.T) {
+func TestReplaceInputFiles(t *testing.T) {
 	tests := []struct {
-		name        string
-		userInput   inputs.UserInput
-		shouldDelete bool
+		name         string
+		userInput    inputs.UserInput
+		shouldReplace bool
 	}{
 		{
-			name: "Delete single file",
+			name: "Replace single file",
 			userInput: inputs.UserInput{
-				Delete:      true,
+				Replace:     true,
 				IsDirectory: false,
 			},
-			shouldDelete: true,
+			shouldReplace: true,
 		},
 		{
-			name: "Delete directory (not implemented)",
+			name: "Replace directory files",
 			userInput: inputs.UserInput{
-				Delete:      true,
+				Replace:     true,
 				IsDirectory: true,
 			},
-			shouldDelete: false, // Not implemented yet
+			shouldReplace: true,
 		},
 		{
-			name: "No delete",
+			name: "No replace",
 			userInput: inputs.UserInput{
-				Delete:      false,
+				Replace:     false,
 				IsDirectory: false,
 			},
-			shouldDelete: false,
+			shouldReplace: false,
 		},
 	}
 
@@ -426,17 +428,17 @@ func TestDeleteInputFiles(t *testing.T) {
 			inputFiles := []string{testFile}
 			
 			// Test the function
-			deleteInputFiles(tt.userInput, inputFiles)
+			replaceInputFiles(tt.userInput, inputFiles)
 			
 			// Check if file still exists
 			_, err = os.Stat(testFile)
 			fileExists := !os.IsNotExist(err)
 			
-			if tt.shouldDelete && fileExists {
-				t.Error("Expected file to be deleted, but it still exists")
+			if tt.shouldReplace && fileExists {
+				t.Error("Expected file to be replaced (deleted), but it still exists")
 			}
-			if !tt.shouldDelete && !fileExists {
-				t.Error("Expected file to exist, but it was deleted")
+			if !tt.shouldReplace && !fileExists {
+				t.Error("Expected file to exist, but it was replaced (deleted)")
 			}
 		})
 	}
@@ -452,7 +454,7 @@ func TestWriteOutputFiles(t *testing.T) {
 		{
 			name: "Complete workflow test",
 			userInput: inputs.UserInput{
-				Delete:      false,
+				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 			},

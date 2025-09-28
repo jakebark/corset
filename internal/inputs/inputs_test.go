@@ -49,7 +49,7 @@ func TestUserInputStructure(t *testing.T) {
 	tests := []struct {
 		name        string
 		target      string
-		delete      bool
+		replace     bool
 		whitespace  bool
 		isDirectory bool
 		maxFiles    int
@@ -57,7 +57,7 @@ func TestUserInputStructure(t *testing.T) {
 		{
 			name:        "File input configuration",
 			target:      "/path/to/file.json",
-			delete:      false,
+			replace:     false,
 			whitespace:  true,
 			isDirectory: false,
 			maxFiles:    config.DefaultMaxFiles,
@@ -65,7 +65,7 @@ func TestUserInputStructure(t *testing.T) {
 		{
 			name:        "Directory input configuration",
 			target:      "/path/to/directory",
-			delete:      true,
+			replace:     true,
 			whitespace:  false,
 			isDirectory: true,
 			maxFiles:    config.DefaultMaxFiles,
@@ -76,7 +76,7 @@ func TestUserInputStructure(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			userInput := UserInput{
 				Target:      tt.target,
-				Delete:      tt.delete,
+				Replace:     tt.replace,
 				Whitespace:  tt.whitespace,
 				IsDirectory: tt.isDirectory,
 				MaxFiles:    tt.maxFiles,
@@ -85,8 +85,8 @@ func TestUserInputStructure(t *testing.T) {
 			if userInput.Target != tt.target {
 				t.Errorf("Expected Target %s, got %s", tt.target, userInput.Target)
 			}
-			if userInput.Delete != tt.delete {
-				t.Errorf("Expected Delete %v, got %v", tt.delete, userInput.Delete)
+			if userInput.Replace != tt.replace {
+				t.Errorf("Expected Replace %v, got %v", tt.replace, userInput.Replace)
 			}
 			if userInput.Whitespace != tt.whitespace {
 				t.Errorf("Expected Whitespace %v, got %v", tt.whitespace, userInput.Whitespace)

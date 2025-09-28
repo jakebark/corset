@@ -20,7 +20,7 @@ func TestProcessFiles(t *testing.T) {
 		{
 			name: "Single file with statements",
 			userInput: inputs.UserInput{
-				Delete:      false,
+				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -39,7 +39,7 @@ func TestProcessFiles(t *testing.T) {
 		{
 			name: "Multiple files with statements",
 			userInput: inputs.UserInput{
-				Delete:      false,
+				Replace:      false,
 				Whitespace:  true,
 				IsDirectory: true,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -63,7 +63,7 @@ func TestProcessFiles(t *testing.T) {
 		{
 			name: "Empty policy files",
 			userInput: inputs.UserInput{
-				Delete:      false,
+				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -79,7 +79,7 @@ func TestProcessFiles(t *testing.T) {
 		{
 			name: "Large policy requiring splitting",
 			userInput: inputs.UserInput{
-				Delete:      false,
+				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -180,7 +180,7 @@ func TestProcessFilesErrorCases(t *testing.T) {
 		{
 			name: "Non-existent files",
 			userInput: inputs.UserInput{
-				Delete:      false,
+				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -192,7 +192,7 @@ func TestProcessFilesErrorCases(t *testing.T) {
 		{
 			name: "Invalid JSON files",
 			userInput: inputs.UserInput{
-				Delete:      false,
+				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -209,7 +209,7 @@ func TestProcessFilesErrorCases(t *testing.T) {
 		{
 			name: "Empty file list",
 			userInput: inputs.UserInput{
-				Delete:      false,
+				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -237,7 +237,7 @@ func TestProcessFilesErrorCases(t *testing.T) {
 	}
 }
 
-func TestProcessFilesWithDeletion(t *testing.T) {
+func TestProcessFilesWithReplacement(t *testing.T) {
 	tempDir := t.TempDir()
 	
 	// Create test file
@@ -261,7 +261,7 @@ func TestProcessFilesWithDeletion(t *testing.T) {
 	
 	userInput := inputs.UserInput{
 		Target:      testFile,
-		Delete:      true,
+		Replace:     true,
 		Whitespace:  false,
 		IsDirectory: false,
 		MaxFiles:    config.DefaultMaxFiles,
@@ -269,15 +269,27 @@ func TestProcessFilesWithDeletion(t *testing.T) {
 	
 	ProcessFiles(userInput, []string{testFile})
 	
-	// Verify original file was deleted
-	if _, err := os.Stat(testFile); !os.IsNotExist(err) {
-		t.Error("Expected original file to be deleted")
+	// Verify original file was replaced (should still exist with new content)
+	if _, err := os.Stat(testFile); os.IsNotExist(err) {
+		t.Error("Expected original file to be replaced, but it doesn't exist")
 	}
 	
-	// Verify output file was created
+	// For single file replacement, no separate corset1.json should be created
 	outputFile := filepath.Join(tempDir, "corset1.json")
-	if _, err := os.Stat(outputFile); os.IsNotExist(err) {
-		t.Error("Expected output file to be created")
+	if _, err := os.Stat(outputFile); err == nil {
+		t.Error("Expected no separate corset1.json file for single file replacement")
+	}
+	
+	// Verify the content of the replaced file is valid JSON
+	newData, err := os.ReadFile(testFile)
+	if err != nil {
+		t.Fatalf("Failed to read replaced file: %v", err)
+	}
+	
+	var newPolicy testPolicy
+	err = json.Unmarshal(newData, &newPolicy)
+	if err != nil {
+		t.Fatalf("Replaced file contains invalid JSON: %v", err)
 	}
 }
 
