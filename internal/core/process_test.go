@@ -14,7 +14,7 @@ func TestProcessFiles(t *testing.T) {
 	tests := []struct {
 		name      string
 		userInput inputs.UserInput
-		policies  []testPolicy
+		policies  []Policy
 		expectOutput bool
 	}{
 		{
@@ -25,7 +25,7 @@ func TestProcessFiles(t *testing.T) {
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
 			},
-			policies: []testPolicy{
+			policies: []Policy{
 				{
 					Version: "2012-10-17",
 					Statement: []map[string]interface{}{
@@ -44,7 +44,7 @@ func TestProcessFiles(t *testing.T) {
 				IsDirectory: true,
 				MaxFiles:    config.DefaultMaxFiles,
 			},
-			policies: []testPolicy{
+			policies: []Policy{
 				{
 					Version: "2012-10-17",
 					Statement: []map[string]interface{}{
@@ -68,7 +68,7 @@ func TestProcessFiles(t *testing.T) {
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
 			},
-			policies: []testPolicy{
+			policies: []Policy{
 				{
 					Version:   "2012-10-17",
 					Statement: []map[string]interface{}{},
@@ -84,7 +84,7 @@ func TestProcessFiles(t *testing.T) {
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
 			},
-			policies: []testPolicy{
+			policies: []Policy{
 				{
 					Version: "2012-10-17",
 					Statement: createLargeStatements(20), // Large enough to require splitting
@@ -147,7 +147,7 @@ func TestProcessFiles(t *testing.T) {
 							continue
 						}
 						
-						var policy testPolicy
+						var policy Policy
 						err = json.Unmarshal(data, &policy)
 						if err != nil {
 							t.Errorf("Output file %s contains invalid JSON: %v", outputFile, err)
@@ -242,7 +242,7 @@ func TestProcessFilesWithReplacement(t *testing.T) {
 	
 	// Create test file
 	testFile := filepath.Join(tempDir, "test.json")
-	policy := testPolicy{
+	policy := Policy{
 		Version: "2012-10-17",
 		Statement: []map[string]interface{}{
 			{"Effect": "Allow", "Action": "s3:GetObject", "Resource": "*"},
@@ -286,7 +286,7 @@ func TestProcessFilesWithReplacement(t *testing.T) {
 		t.Fatalf("Failed to read replaced file: %v", err)
 	}
 	
-	var newPolicy testPolicy
+	var newPolicy Policy
 	err = json.Unmarshal(newData, &newPolicy)
 	if err != nil {
 		t.Fatalf("Replaced file contains invalid JSON: %v", err)

@@ -92,7 +92,7 @@ func TestCreatePolicyJSON(t *testing.T) {
 			data := createPolicyJSON(tt.userInput, tt.statements)
 			
 			// Verify it's valid JSON
-			var policy testPolicy
+			var policy Policy
 			err := json.Unmarshal(data, &policy)
 			if err != nil {
 				t.Fatalf("Generated invalid JSON: %v", err)
@@ -207,7 +207,7 @@ func TestWriteOutputFile(t *testing.T) {
 			}
 			
 			// Verify it's valid JSON
-			var policy testPolicy
+			var policy Policy
 			err = json.Unmarshal(data, &policy)
 			if err != nil {
 				t.Fatalf("Output is not valid JSON: %v", err)
@@ -495,6 +495,74 @@ func TestWriteOutputFiles(t *testing.T) {
 				if _, err := os.Stat(outputFile); os.IsNotExist(err) {
 					t.Errorf("Expected output file %s to be created", outputFile)
 				}
+			}
+		})
+	}
+}
+func TestGenerateOutputFilename(t *testing.T) {
+	tests := []struct {
+		name       string
+		userInput  inputs.UserInput
+		outputDir  string
+		fileNum    int
+		inputFiles []string
+		expected   string
+	}{
+		{
+			name: "Default naming convention",
+			userInput: inputs.UserInput{
+				Replace:     false,
+				IsDirectory: false,
+				Target:      "/path/to/file.json",
+			},
+			outputDir:  "/output",
+			fileNum:    1,
+			inputFiles: []string{"/path/to/file.json"},
+			expected:   "/output/corset1.json",
+		},
+		{
+			name: "Single file replacement",
+			userInput: inputs.UserInput{
+				Replace:     true,
+				IsDirectory: false,
+				Target:      "/path/to/policy.json",
+			},
+			outputDir:  "/output",
+			fileNum:    1,
+			inputFiles: []string{"/path/to/policy.json"},
+			expected:   "/path/to/policy.json",
+		},
+		{
+			name: "Directory replacement - first file",
+			userInput: inputs.UserInput{
+				Replace:     true,
+				IsDirectory: true,
+				Target:      "/path/to/organisation-scp",
+			},
+			outputDir:  "/path/to/organisation-scp",
+			fileNum:    1,
+			inputFiles: []string{"/path/to/organisation-scp/policy1.json"},
+			expected:   "/path/to/organisation-scp/organisation-scp.json",
+		},
+		{
+			name: "Directory replacement - second file",
+			userInput: inputs.UserInput{
+				Replace:     true,
+				IsDirectory: true,
+				Target:      "/path/to/organisation-scp",
+			},
+			outputDir:  "/path/to/organisation-scp",
+			fileNum:    2,
+			inputFiles: []string{"/path/to/organisation-scp/policy1.json"},
+			expected:   "/path/to/organisation-scp/organisation-scp-2.json",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := generateOutputFilename(tt.userInput, tt.outputDir, tt.fileNum, tt.inputFiles)
+			if result != tt.expected {
+				t.Errorf("Expected %s, got %s", tt.expected, result)
 			}
 		})
 	}

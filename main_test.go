@@ -13,7 +13,7 @@ import (
 	"github.com/jakebark/corset/internal/inputs"
 )
 
-type TestPolicy struct {
+type Policy struct {
 	Version   string                   `json:"Version"`
 	Statement []map[string]interface{} `json:"Statement"`
 }
@@ -181,8 +181,8 @@ func copyTestDataFile(t *testing.T, filename, destDir string) string {
 	return destPath
 }
 
-func loadInputPolicies(t *testing.T, filenames []string) []TestPolicy {
-	var policies []TestPolicy
+func loadInputPolicies(t *testing.T, filenames []string) []Policy {
+	var policies []Policy
 	for _, filename := range filenames {
 		testDataPath := filepath.Join("testdata", filename)
 		data, err := os.ReadFile(testDataPath)
@@ -190,7 +190,7 @@ func loadInputPolicies(t *testing.T, filenames []string) []TestPolicy {
 			t.Fatalf("Failed to read testdata file %s: %v", testDataPath, err)
 		}
 
-		var policy TestPolicy
+		var policy Policy
 		err = json.Unmarshal(data, &policy)
 		if err != nil {
 			t.Fatalf("Failed to unmarshal testdata file %s: %v", testDataPath, err)
@@ -223,13 +223,13 @@ func readFileContent(t *testing.T, filepath string) string {
 	return string(data)
 }
 
-func readOutputFile(t *testing.T, filepath string) TestPolicy {
+func readOutputFile(t *testing.T, filepath string) Policy {
 	data, err := os.ReadFile(filepath)
 	if err != nil {
 		t.Fatalf("Failed to read output file %s: %v", filepath, err)
 	}
 
-	var policy TestPolicy
+	var policy Policy
 	err = json.Unmarshal(data, &policy)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal output file %s: %v", filepath, err)
@@ -243,7 +243,7 @@ func containsWhitespace(content string) bool {
 	return strings.Contains(content, "\n  ") || strings.Contains(content, "{\n  ")
 }
 
-func verifyPolicyIntegrity(t *testing.T, inputPolicies []TestPolicy, outputFiles []string) {
+func verifyPolicyIntegrity(t *testing.T, inputPolicies []Policy, outputFiles []string) {
 	// Collect all input statements
 	expectedStatements := make(map[string]map[string]interface{})
 	for _, policy := range inputPolicies {

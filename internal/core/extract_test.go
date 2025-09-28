@@ -10,12 +10,12 @@ import (
 func TestExtractIndividualPolicies(t *testing.T) {
 	tests := []struct {
 		name               string
-		policy             testPolicy
+		policy             Policy
 		expectedStatements int
 	}{
 		{
 			name: "Small policy with 2 statements",
-			policy: testPolicy{
+			policy: Policy{
 				Version: "2012-10-17",
 				Statement: []map[string]interface{}{
 					{"Effect": "Allow", "Action": "s3:GetObject", "Resource": "*"},
@@ -26,7 +26,7 @@ func TestExtractIndividualPolicies(t *testing.T) {
 		},
 		{
 			name: "Empty policy",
-			policy: testPolicy{
+			policy: Policy{
 				Version:   "2012-10-17",
 				Statement: []map[string]interface{}{},
 			},
@@ -34,7 +34,7 @@ func TestExtractIndividualPolicies(t *testing.T) {
 		},
 		{
 			name: "Single statement policy",
-			policy: testPolicy{
+			policy: Policy{
 				Version: "2012-10-17",
 				Statement: []map[string]interface{}{
 					{"Effect": "Allow", "Action": "s3:*", "Resource": "*"},
@@ -44,7 +44,7 @@ func TestExtractIndividualPolicies(t *testing.T) {
 		},
 		{
 			name: "Large complex policy",
-			policy: testPolicy{
+			policy: Policy{
 				Version: "2012-10-17",
 				Statement: []map[string]interface{}{
 					{
@@ -124,12 +124,12 @@ func TestExtractIndividualPolicies(t *testing.T) {
 func TestExtractAllStatements(t *testing.T) {
 	tests := []struct {
 		name            string
-		policies        []testPolicy
+		policies        []Policy
 		expectedTotal   int
 	}{
 		{
 			name: "Single file with multiple statements",
-			policies: []testPolicy{
+			policies: []Policy{
 				{
 					Version: "2012-10-17",
 					Statement: []map[string]interface{}{
@@ -142,7 +142,7 @@ func TestExtractAllStatements(t *testing.T) {
 		},
 		{
 			name: "Multiple files",
-			policies: []testPolicy{
+			policies: []Policy{
 				{
 					Version: "2012-10-17",
 					Statement: []map[string]interface{}{
@@ -161,7 +161,7 @@ func TestExtractAllStatements(t *testing.T) {
 		},
 		{
 			name: "Empty files",
-			policies: []testPolicy{
+			policies: []Policy{
 				{
 					Version: "2012-10-17",
 					Statement: []map[string]interface{}{},
