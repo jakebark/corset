@@ -10,7 +10,7 @@ import (
 
 type UserInput struct {
 	Target      string
-	Delete      bool
+	Replace     bool
 	Whitespace  bool
 	IsDirectory bool
 	MaxFiles    int
@@ -23,10 +23,10 @@ func isDirectory(target string) bool {
 }
 
 func ParseFlags() UserInput {
-	var delete bool
+	var replace bool
 	var whitespace bool
 
-	pflag.BoolVarP(&delete, "delete", "d", false, "Delete old files")
+	pflag.BoolVarP(&replace, "replace", "d", false, "replace old files")
 	pflag.BoolVarP(&whitespace, "whitespace", "w", false, "retain whitespace")
 	pflag.Parse()
 
@@ -36,7 +36,7 @@ func ParseFlags() UserInput {
 	target := pflag.Arg(0)
 	return UserInput{
 		Target:      target,
-		Delete:      delete,
+		Replace:     replace,
 		Whitespace:  whitespace,
 		IsDirectory: isDirectory(target),
 		MaxFiles:    config.DefaultMaxFiles,

@@ -21,7 +21,7 @@ type TestPolicy struct {
 type integrationTestCase struct {
 	name            string
 	whitespace      bool
-	delete          bool
+	replace         bool
 	isDirectory     bool
 	inputFiles      []string // testdata files to use
 	expectedFiles   int      // expected number of output files
@@ -36,7 +36,7 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Single small policy no whitespace",
 			whitespace:      false,
-			delete:          false,
+			replace:         false,
 			isDirectory:     false,
 			inputFiles:      []string{"small_policy.json"},
 			expectedFiles:   1,
@@ -46,7 +46,7 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Single small policy with whitespace",
 			whitespace:      true,
-			delete:          false,
+			replace:         false,
 			isDirectory:     false,
 			inputFiles:      []string{"small_policy.json"},
 			expectedFiles:   1,
@@ -56,7 +56,7 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Large policy forces split",
 			whitespace:      false,
-			delete:          false,
+			replace:         false,
 			isDirectory:     false,
 			inputFiles:      []string{"very_large_policy.json"},
 			expectedFiles:   2, // Should split into multiple files
@@ -66,7 +66,7 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Directory with multiple files",
 			whitespace:      false,
-			delete:          false,
+			replace:         false,
 			isDirectory:     true,
 			inputFiles:      []string{"policy1.json", "policy2.json", "policy3.json"},
 			expectedFiles:   1, // Should combine into one file
@@ -76,7 +76,7 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Policy integrity test - statements not cut",
 			whitespace:      false,
-			delete:          false,
+			replace:         false,
 			isDirectory:     false,
 			inputFiles:      []string{"integrity_test.json"},
 			expectedFiles:   1, // Should fit in one file
@@ -105,7 +105,7 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 			// Create UserInput
 			userInput := inputs.UserInput{
 				Target:      targetPath,
-				Delete:      tt.delete,
+				Replace:     tt.replace,
 				Whitespace:  tt.whitespace,
 				IsDirectory: tt.isDirectory,
 				MaxFiles:    config.DefaultMaxFiles,
