@@ -20,7 +20,23 @@ func TestCreatePolicyJSON(t *testing.T) {
 		wantIndent bool
 	}{
 		{
-			name: "Single statement without whitespace",
+			name: "single statement",
+			userInput: inputs.UserInput{
+				Whitespace: true,
+			},
+			statements: []Statement{
+				{
+					Content: map[string]interface{}{
+						"Effect":   "Allow",
+						"Action":   "s3:GetObject",
+						"Resource": "*",
+					},
+					Size: 50,
+				},
+			},
+			wantIndent: true,
+		}, {
+			name: "single statement, no whitespace",
 			userInput: inputs.UserInput{
 				Whitespace: false,
 			},
@@ -36,25 +52,9 @@ func TestCreatePolicyJSON(t *testing.T) {
 			},
 			wantIndent: false,
 		},
+
 		{
-			name: "Single statement with whitespace",
-			userInput: inputs.UserInput{
-				Whitespace: true,
-			},
-			statements: []Statement{
-				{
-					Content: map[string]interface{}{
-						"Effect":   "Allow",
-						"Action":   "s3:GetObject",
-						"Resource": "*",
-					},
-					Size: 50,
-				},
-			},
-			wantIndent: true,
-		},
-		{
-			name: "Multiple statements",
+			name: "multiple statements, no whitespace",
 			userInput: inputs.UserInput{
 				Whitespace: false,
 			},
@@ -79,7 +79,7 @@ func TestCreatePolicyJSON(t *testing.T) {
 			wantIndent: false,
 		},
 		{
-			name: "Empty statements",
+			name: "no statements",
 			userInput: inputs.UserInput{
 				Whitespace: false,
 			},
@@ -91,23 +91,23 @@ func TestCreatePolicyJSON(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			data := createPolicyJSON(tt.userInput, tt.statements)
-			
+
 			// Verify it's valid JSON
 			var policy Policy
 			err := json.Unmarshal(data, &policy)
 			if err != nil {
 				t.Fatalf("Generated invalid JSON: %v", err)
 			}
-			
+
 			// Verify structure
 			if policy.Version != config.SCPVersion {
 				t.Errorf("Expected version %s, got %s", config.SCPVersion, policy.Version)
 			}
-			
+
 			if len(policy.Statement) != len(tt.statements) {
 				t.Errorf("Expected %d statements, got %d", len(tt.statements), len(policy.Statement))
 			}
-			
+
 			// Verify whitespace formatting
 			content := string(data)
 			hasIndent := strings.Contains(content, "\n  ")
@@ -117,13 +117,13 @@ func TestCreatePolicyJSON(t *testing.T) {
 			if !tt.wantIndent && hasIndent {
 				t.Error("Expected minified formatting")
 			}
-			
+
 			// Verify statement content
 			for i, stmt := range tt.statements {
 				if i < len(policy.Statement) {
 					originalContent := stmt.Content
 					generatedContent := policy.Statement[i]
-					
+
 					if !mapsEqual(originalContent, generatedContent) {
 						t.Errorf("Statement %d content mismatch", i)
 					}
@@ -141,7 +141,7 @@ func TestWriteOutputFile(t *testing.T) {
 		filename   string
 	}{
 		{
-			name: "Single statement with whitespace",
+			name: "single statement",
 			userInput: inputs.UserInput{
 				Whitespace: true,
 			},
@@ -158,7 +158,7 @@ func TestWriteOutputFile(t *testing.T) {
 			filename: "output_ws.json",
 		},
 		{
-			name: "Multiple statements without whitespace",
+			name: "multiple statements, no whitespace",
 			userInput: inputs.UserInput{
 				Whitespace: false,
 			},
@@ -188,41 +188,41 @@ func TestWriteOutputFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tempDir := t.TempDir()
 			outputFile := filepath.Join(tempDir, tt.filename)
-			
+
 			size := writeOutputFile(tt.userInput, outputFile, tt.statements)
-			
+
 			// Verify file was created
 			if _, err := os.Stat(outputFile); os.IsNotExist(err) {
 				t.Fatal("Output file was not created")
 			}
-			
+
 			// Verify file content
 			data, err := os.ReadFile(outputFile)
 			if err != nil {
 				t.Fatalf("Failed to read output file: %v", err)
 			}
-			
+
 			// Verify size matches
 			if size != len(data) {
 				t.Errorf("Expected size %d, got %d", len(data), size)
 			}
-			
+
 			// Verify it's valid JSON
 			var policy Policy
 			err = json.Unmarshal(data, &policy)
 			if err != nil {
 				t.Fatalf("Output is not valid JSON: %v", err)
 			}
-			
+
 			// Verify structure
 			if policy.Version != config.SCPVersion {
 				t.Errorf("Expected version %s, got %s", config.SCPVersion, policy.Version)
 			}
-			
+
 			if len(policy.Statement) != len(tt.statements) {
 				t.Errorf("Expected %d statements, got %d", len(tt.statements), len(policy.Statement))
 			}
-			
+
 			// Verify whitespace formatting
 			content := string(data)
 			hasWhitespace := strings.Contains(content, "\n  ")
@@ -245,7 +245,7 @@ func TestWriteAllPolicyFiles(t *testing.T) {
 		expected    int
 	}{
 		{
-			name: "Single file output",
+			name: "single file output",
 			userInput: inputs.UserInput{
 				Whitespace: false,
 			},
@@ -259,7 +259,7 @@ func TestWriteAllPolicyFiles(t *testing.T) {
 			expected:  1,
 		},
 		{
-			name: "Multiple file output",
+			name: "multiple file output",
 			userInput: inputs.UserInput{
 				Whitespace: true,
 			},
@@ -275,7 +275,7 @@ func TestWriteAllPolicyFiles(t *testing.T) {
 			expected:  2,
 		},
 		{
-			name: "Empty packed files",
+			name: "no files",
 			userInput: inputs.UserInput{
 				Whitespace: false,
 			},
@@ -293,21 +293,21 @@ func TestWriteAllPolicyFiles(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create output directory: %v", err)
 			}
-			
+
 			// Create mock input files for testing
 			inputFiles := []string{filepath.Join(outputDir, "input.json")}
 			results := writeAllPolicyFiles(tt.userInput, tt.packedFiles, outputDir, inputFiles)
-			
+
 			if len(results) != tt.expected {
 				t.Errorf("Expected %d results, got %d", tt.expected, len(results))
 			}
-			
+
 			// Verify files were created
 			for i, result := range results {
 				if _, err := os.Stat(result.Filename); os.IsNotExist(err) {
 					t.Errorf("Output file %d was not created: %s", i, result.Filename)
 				}
-				
+
 				// Verify filename format - with automatic replacement, should use input filename with suffix for splits
 				var expectedFilename string
 				originalFile := inputFiles[0]
@@ -321,7 +321,7 @@ func TestWriteAllPolicyFiles(t *testing.T) {
 				if result.Filename != expectedFilename {
 					t.Errorf("Expected filename %s, got %s", expectedFilename, result.Filename)
 				}
-				
+
 				// Verify statement count
 				if i < len(tt.packedFiles) {
 					expectedStatements := len(tt.packedFiles[i])
@@ -329,7 +329,7 @@ func TestWriteAllPolicyFiles(t *testing.T) {
 						t.Errorf("Expected %d statements in result %d, got %d", expectedStatements, i, result.Statements)
 					}
 				}
-				
+
 				// Verify size is reasonable
 				if result.Size <= 0 {
 					t.Errorf("Expected positive size for result %d, got %d", i, result.Size)
@@ -347,7 +347,7 @@ func TestReportResults(t *testing.T) {
 		results []WriteResult
 	}{
 		{
-			name: "Single result",
+			name: "ingle result",
 			results: []WriteResult{
 				{
 					Filename:   "/tmp/corset1.json",
@@ -357,7 +357,7 @@ func TestReportResults(t *testing.T) {
 			},
 		},
 		{
-			name: "Multiple results",
+			name: "multiple results",
 			results: []WriteResult{
 				{
 					Filename:   "/tmp/corset1.json",
@@ -372,7 +372,7 @@ func TestReportResults(t *testing.T) {
 			},
 		},
 		{
-			name:    "Empty results",
+			name:    "no results",
 			results: []WriteResult{},
 		},
 	}
@@ -385,7 +385,7 @@ func TestReportResults(t *testing.T) {
 					t.Errorf("reportResults panicked: %v", r)
 				}
 			}()
-			
+
 			reportResults(tt.results)
 		})
 	}
@@ -397,13 +397,13 @@ func TestReplaceInputFiles(t *testing.T) {
 		userInput inputs.UserInput
 	}{
 		{
-			name: "Always replace files",
+			name: "replace file",
 			userInput: inputs.UserInput{
 				IsDirectory: false,
 			},
 		},
 		{
-			name: "Always replace directory files",
+			name: "replace files in directory",
 			userInput: inputs.UserInput{
 				IsDirectory: true,
 			},
@@ -414,22 +414,22 @@ func TestReplaceInputFiles(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tempDir := t.TempDir()
 			testFile := filepath.Join(tempDir, "test.json")
-			
+
 			// Create test file
 			err := os.WriteFile(testFile, []byte(`{"test": true}`), 0644)
 			if err != nil {
 				t.Fatalf("Failed to create test file: %v", err)
 			}
-			
+
 			inputFiles := []string{testFile}
-			
+
 			// Test the function - should always delete files
 			replaceInputFiles(tt.userInput, inputFiles)
-			
+
 			// Check if file was deleted (replacement is now automatic)
 			_, err = os.Stat(testFile)
 			fileExists := !os.IsNotExist(err)
-			
+
 			if fileExists {
 				t.Error("Expected file to be replaced (deleted), but it still exists")
 			}
@@ -445,7 +445,7 @@ func TestWriteOutputFiles(t *testing.T) {
 		inputFiles  []string
 	}{
 		{
-			name: "Complete workflow test",
+			name: "complete workflow test",
 			userInput: inputs.UserInput{
 				Whitespace:  false,
 				IsDirectory: false,
@@ -463,7 +463,7 @@ func TestWriteOutputFiles(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tempDir := t.TempDir()
-			
+
 			// Create a mock input file in the temp directory
 			inputFile := filepath.Join(tempDir, "input.json")
 			err := os.WriteFile(inputFile, []byte(`{"test": true}`), 0644)
@@ -471,16 +471,16 @@ func TestWriteOutputFiles(t *testing.T) {
 				t.Fatalf("Failed to create input file: %v", err)
 			}
 			tt.inputFiles = []string{inputFile}
-			
+
 			// Test the function - should not panic
 			defer func() {
 				if r := recover(); r != nil {
 					t.Errorf("writeOutputFiles panicked: %v", r)
 				}
 			}()
-			
+
 			writeOutputFiles(tt.userInput, tt.packedFiles, tt.inputFiles)
-			
+
 			// Verify output files were created - with automatic replacement, check the input file was replaced
 			if _, err := os.Stat(inputFile); os.IsNotExist(err) {
 				t.Errorf("Expected input file %s to be replaced in-place", inputFile)
@@ -498,7 +498,7 @@ func TestGenerateOutputFilename(t *testing.T) {
 		expected   string
 	}{
 		{
-			name: "Single file replacement",
+			name: "single file replacement I",
 			userInput: inputs.UserInput{
 				IsDirectory: false,
 				Target:      "/path/to/file.json",
@@ -509,7 +509,7 @@ func TestGenerateOutputFilename(t *testing.T) {
 			expected:   "/path/to/file.json",
 		},
 		{
-			name: "Single file replacement",
+			name: "single file replacement II",
 			userInput: inputs.UserInput{
 				IsDirectory: false,
 				Target:      "/path/to/policy.json",
@@ -520,7 +520,7 @@ func TestGenerateOutputFilename(t *testing.T) {
 			expected:   "/path/to/policy.json",
 		},
 		{
-			name: "Directory replacement - first file",
+			name: "directory replacement, first file",
 			userInput: inputs.UserInput{
 				IsDirectory: true,
 				Target:      "/path/to/organisation-scp",
@@ -531,7 +531,7 @@ func TestGenerateOutputFilename(t *testing.T) {
 			expected:   "/path/to/organisation-scp/organisation-scp.json",
 		},
 		{
-			name: "Directory replacement - second file",
+			name: "directory replacement, second file",
 			userInput: inputs.UserInput{
 				IsDirectory: true,
 				Target:      "/path/to/organisation-scp",
