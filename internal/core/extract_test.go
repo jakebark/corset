@@ -14,7 +14,17 @@ func TestExtractIndividualPolicies(t *testing.T) {
 		expectedStatements int
 	}{
 		{
-			name: "Small policy with 2 statements",
+			name: "one statement",
+			policy: Policy{
+				Version: "2012-10-17",
+				Statement: []map[string]interface{}{
+					{"Effect": "Allow", "Action": "s3:*", "Resource": "*"},
+				},
+			},
+			expectedStatements: 1,
+		},
+		{
+			name: "two statements",
 			policy: Policy{
 				Version: "2012-10-17",
 				Statement: []map[string]interface{}{
@@ -25,7 +35,7 @@ func TestExtractIndividualPolicies(t *testing.T) {
 			expectedStatements: 2,
 		},
 		{
-			name: "Empty policy",
+			name: "no statements",
 			policy: Policy{
 				Version:   "2012-10-17",
 				Statement: []map[string]interface{}{},
@@ -33,17 +43,7 @@ func TestExtractIndividualPolicies(t *testing.T) {
 			expectedStatements: 0,
 		},
 		{
-			name: "Single statement policy",
-			policy: Policy{
-				Version: "2012-10-17",
-				Statement: []map[string]interface{}{
-					{"Effect": "Allow", "Action": "s3:*", "Resource": "*"},
-				},
-			},
-			expectedStatements: 1,
-		},
-		{
-			name: "Large complex policy",
+			name: "two statements, complex",
 			policy: Policy{
 				Version: "2012-10-17",
 				Statement: []map[string]interface{}{
@@ -62,8 +62,8 @@ func TestExtractIndividualPolicies(t *testing.T) {
 						},
 					},
 					{
-						"Effect": "Deny",
-						"Action": "*",
+						"Effect":   "Deny",
+						"Action":   "*",
 						"Resource": "*",
 						"Condition": map[string]interface{}{
 							"Bool": map[string]interface{}{
@@ -80,26 +80,26 @@ func TestExtractIndividualPolicies(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tempDir := t.TempDir()
-			
+
 			// Create test file
 			testFile := filepath.Join(tempDir, "test.json")
 			data, err := json.MarshalIndent(tt.policy, "", "  ")
 			if err != nil {
 				t.Fatalf("Failed to marshal test policy: %v", err)
 			}
-			
+
 			err = os.WriteFile(testFile, data, 0644)
 			if err != nil {
 				t.Fatalf("Failed to write test file: %v", err)
 			}
-			
+
 			// Test the function
 			statements := extractIndividualPolicies(testFile)
-			
+
 			if len(statements) != tt.expectedStatements {
 				t.Errorf("Expected %d statements, got %d", tt.expectedStatements, len(statements))
 			}
-			
+
 			// Verify each statement has required fields
 			for i, stmt := range statements {
 				if stmt.Content == nil {
@@ -108,7 +108,7 @@ func TestExtractIndividualPolicies(t *testing.T) {
 				if len(statements) > 0 && stmt.Size <= 0 {
 					t.Errorf("Statement %d has invalid size: %d", i, stmt.Size)
 				}
-				
+
 				// Verify content matches original
 				if i < len(tt.policy.Statement) {
 					expectedContent := tt.policy.Statement[i]
@@ -123,9 +123,9 @@ func TestExtractIndividualPolicies(t *testing.T) {
 
 func TestExtractAllStatements(t *testing.T) {
 	tests := []struct {
-		name            string
-		policies        []Policy
-		expectedTotal   int
+		name          string
+		policies      []Policy
+		expectedTotal int
 	}{
 		{
 			name: "Single file with multiple statements",
@@ -163,11 +163,11 @@ func TestExtractAllStatements(t *testing.T) {
 			name: "Empty files",
 			policies: []Policy{
 				{
-					Version: "2012-10-17",
+					Version:   "2012-10-17",
 					Statement: []map[string]interface{}{},
 				},
 				{
-					Version: "2012-10-17",
+					Version:   "2012-10-17",
 					Statement: []map[string]interface{}{},
 				},
 			},
@@ -179,7 +179,7 @@ func TestExtractAllStatements(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tempDir := t.TempDir()
 			var files []string
-			
+
 			// Create test files
 			for i, policy := range tt.policies {
 				testFile := filepath.Join(tempDir, filepath.Base(tt.name)+"-"+string(rune('a'+i))+".json")
@@ -187,21 +187,21 @@ func TestExtractAllStatements(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Failed to marshal test policy %d: %v", i, err)
 				}
-				
+
 				err = os.WriteFile(testFile, data, 0644)
 				if err != nil {
 					t.Fatalf("Failed to write test file %d: %v", i, err)
 				}
 				files = append(files, testFile)
 			}
-			
+
 			// Test the function
 			statements := extractAllStatements(files)
-			
+
 			if len(statements) != tt.expectedTotal {
 				t.Errorf("Expected %d total statements, got %d", tt.expectedTotal, len(statements))
 			}
-			
+
 			// Verify all statements are valid
 			for i, stmt := range statements {
 				if stmt.Content == nil {
@@ -217,7 +217,7 @@ func TestExtractAllStatements(t *testing.T) {
 
 func TestExtractIndividualPoliciesInvalidFile(t *testing.T) {
 	tempDir := t.TempDir()
-	
+
 	tests := []struct {
 		name     string
 		content  string
@@ -239,7 +239,7 @@ func TestExtractIndividualPoliciesInvalidFile(t *testing.T) {
 			expected: 0,
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var testFile string
@@ -252,10 +252,10 @@ func TestExtractIndividualPoliciesInvalidFile(t *testing.T) {
 					t.Fatalf("Failed to write test file: %v", err)
 				}
 			}
-			
+
 			// Should not panic, should handle gracefully
 			statements := extractIndividualPolicies(testFile)
-			
+
 			if len(statements) != tt.expected {
 				t.Errorf("Expected %d statements, got %d", tt.expected, len(statements))
 			}
@@ -268,7 +268,7 @@ func mapsEqual(a, b map[string]interface{}) bool {
 	if len(a) != len(b) {
 		return false
 	}
-	
+
 	for k := range a {
 		if _, ok := b[k]; !ok {
 			return false
@@ -276,6 +276,7 @@ func mapsEqual(a, b map[string]interface{}) bool {
 		// For testing purposes, just check that keys exist
 		// Full deep comparison would be more complex for nested structures
 	}
-	
+
 	return true
 }
+
