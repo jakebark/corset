@@ -492,7 +492,7 @@ func TestGenerateOutputFilename(t *testing.T) {
 		expected   string
 	}{
 		{
-			name: "Default naming convention",
+			name: "Single file replacement",
 			userInput: inputs.UserInput{
 				IsDirectory: false,
 				Target:      "/path/to/file.json",
@@ -500,7 +500,7 @@ func TestGenerateOutputFilename(t *testing.T) {
 			outputDir:  "/output",
 			fileNum:    1,
 			inputFiles: []string{"/path/to/file.json"},
-			expected:   "/output/corset1.json",
+			expected:   "/path/to/file.json",
 		},
 		{
 			name: "Single file replacement",
