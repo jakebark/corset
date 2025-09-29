@@ -15,9 +15,7 @@ func packAllStatements(userInput inputs.UserInput, statements []Statement) [][]S
 	return packPolicies(userInput, statements, baseSize)
 }
 
-// first fit / bin pack
 func packPolicies(userInput inputs.UserInput, statements []Statement, baseSize int) [][]Statement {
-	// Sort policies by size (largest first) for better bin packing
 	sort.Slice(statements, func(i, j int) bool {
 		return statements[i].Size > statements[j].Size
 	})
@@ -25,18 +23,16 @@ func packPolicies(userInput inputs.UserInput, statements []Statement, baseSize i
 	files := make([][]Statement, userInput.MaxFiles)
 	fileSizes := make([]int, userInput.MaxFiles)
 
-	// Initialize each file with base structure size
+	// initialize each file with base structure size
 	for i := range fileSizes {
 		fileSizes[i] = baseSize
 	}
 
-	// First Fit Decreasing algorithm
 	for _, stmt := range statements {
 		placed := false
 
-		// Try to place in existing file with space
 		for i := 0; i < userInput.MaxFiles; i++ {
-			// Account for comma separator (except for first statement)
+			// account for comma separator (except for first statement)
 			separator := 0
 			if len(files[i]) > 0 {
 				separator = 1 // for comma
@@ -55,7 +51,7 @@ func packPolicies(userInput inputs.UserInput, statements []Statement, baseSize i
 		}
 	}
 
-	// Remove empty files
+	// remove empty files
 	var result [][]Statement
 	for _, file := range files {
 		if len(file) > 0 {
@@ -63,7 +59,7 @@ func packPolicies(userInput inputs.UserInput, statements []Statement, baseSize i
 		}
 	}
 
-	// Return empty slice instead of nil for empty results
+	// return empty slice instead of nil for empty results
 	if result == nil {
 		result = [][]Statement{}
 	}
