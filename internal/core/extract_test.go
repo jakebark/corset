@@ -128,7 +128,7 @@ func TestExtractAllStatements(t *testing.T) {
 		expectedTotal int
 	}{
 		{
-			name: "Single file with multiple statements",
+			name: "single file, multiple statements",
 			policies: []Policy{
 				{
 					Version: "2012-10-17",
@@ -141,7 +141,7 @@ func TestExtractAllStatements(t *testing.T) {
 			expectedTotal: 2,
 		},
 		{
-			name: "Multiple files",
+			name: "multiple files, multiple statements",
 			policies: []Policy{
 				{
 					Version: "2012-10-17",
@@ -160,7 +160,7 @@ func TestExtractAllStatements(t *testing.T) {
 			expectedTotal: 3,
 		},
 		{
-			name: "Empty files",
+			name: "mutiple files, no statements",
 			policies: []Policy{
 				{
 					Version:   "2012-10-17",
@@ -224,17 +224,17 @@ func TestExtractIndividualPoliciesInvalidFile(t *testing.T) {
 		expected int
 	}{
 		{
-			name:     "Invalid JSON",
+			name:     "invalid JSON",
 			content:  `{"Version": "2012-10-17", "Statement": [}`,
 			expected: 0, // Should handle gracefully
 		},
 		{
-			name:     "Missing Statement field",
+			name:     "missing statement field",
 			content:  `{"Version": "2012-10-17"}`,
 			expected: 0,
 		},
 		{
-			name:     "Non-existent file",
+			name:     "missing file",
 			content:  "", // Will test with non-existent file
 			expected: 0,
 		},
