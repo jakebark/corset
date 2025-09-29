@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -307,8 +308,16 @@ func TestWriteAllPolicyFiles(t *testing.T) {
 					t.Errorf("Output file %d was not created: %s", i, result.Filename)
 				}
 				
-				// Verify filename format
-				expectedFilename := filepath.Join(outputDir, "corset"+string(rune('1'+i))+".json")
+				// Verify filename format - with automatic replacement, should use input filename with suffix for splits
+				var expectedFilename string
+				originalFile := inputFiles[0]
+				if i == 0 {
+					expectedFilename = originalFile
+				} else {
+					ext := filepath.Ext(originalFile)
+					nameWithoutExt := originalFile[:len(originalFile)-len(ext)]
+					expectedFilename = fmt.Sprintf("%s-%d%s", nameWithoutExt, i+1, ext)
+				}
 				if result.Filename != expectedFilename {
 					t.Errorf("Expected filename %s, got %s", expectedFilename, result.Filename)
 				}
@@ -472,12 +481,9 @@ func TestWriteOutputFiles(t *testing.T) {
 			
 			writeOutputFiles(tt.userInput, tt.packedFiles, tt.inputFiles)
 			
-			// Verify output files were created
-			for i := range tt.packedFiles {
-				outputFile := filepath.Join(tempDir, "corset"+string(rune('1'+i))+".json")
-				if _, err := os.Stat(outputFile); os.IsNotExist(err) {
-					t.Errorf("Expected output file %s to be created", outputFile)
-				}
+			// Verify output files were created - with automatic replacement, check the input file was replaced
+			if _, err := os.Stat(inputFile); os.IsNotExist(err) {
+				t.Errorf("Expected input file %s to be replaced in-place", inputFile)
 			}
 		})
 	}

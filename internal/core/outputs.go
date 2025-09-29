@@ -43,8 +43,15 @@ func writeAllPolicyFiles(userInput inputs.UserInput, packedFiles [][]Statement, 
 
 func generateOutputFilename(userInput inputs.UserInput, outputDir string, fileNum int, inputFiles []string) string {
 	if !userInput.IsDirectory && len(inputFiles) == 1 {
-		// Single file replacement - use original filename
-		return inputFiles[0]
+		// Single file replacement - use original filename, but add suffix for splits
+		originalFile := inputFiles[0]
+		if fileNum == 1 {
+			return originalFile
+		}
+		// For splits, add -2, -3, etc. to the filename (before .json extension)
+		ext := filepath.Ext(originalFile)
+		nameWithoutExt := originalFile[:len(originalFile)-len(ext)]
+		return fmt.Sprintf("%s-%d%s", nameWithoutExt, fileNum, ext)
 	} else if userInput.IsDirectory {
 		// Directory replacement - use target as base name with number suffix
 		baseName := filepath.Base(userInput.Target)

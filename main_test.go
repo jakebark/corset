@@ -212,8 +212,8 @@ func findOutputFiles(tempDir string, isDirectory bool, baseName string) []string
 			}
 		}
 	} else {
-		// Single file replacement: look for original filename (replaced in-place)
-		// Find any .json files in the directory (should be the replaced file)
+		// Single file replacement: look for original filename and potential splits
+		// For splitting, files will be named like: original.json, original-2.json, original-3.json
 		files, _ := filepath.Glob(filepath.Join(tempDir, "*.json"))
 		outputFiles = append(outputFiles, files...)
 	}

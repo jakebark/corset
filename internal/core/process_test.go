@@ -129,31 +129,64 @@ func TestProcessFiles(t *testing.T) {
 			ProcessFiles(tt.userInput, files)
 			
 			if tt.expectOutput {
-				// Check that output files were created
+				// Check that output files were created - with automatic replacement they should be in-place or directory-named
 				foundOutput := false
-				for i := 1; i <= 5; i++ { // Check for corset1.json, corset2.json, etc.
-					outputFile := filepath.Join(tempDir, "corset"+string(rune('0'+i))+".json")
-					if _, err := os.Stat(outputFile); err == nil {
-						foundOutput = true
-						
-						// Verify the output file is valid JSON
-						data, err := os.ReadFile(outputFile)
-						if err != nil {
-							t.Errorf("Failed to read output file %s: %v", outputFile, err)
-							continue
+				
+				if tt.userInput.IsDirectory {
+					// Directory replacement: check for directory-named files
+					baseName := filepath.Base(tempDir)
+					for i := 1; i <= 5; i++ {
+						var outputFile string
+						if i == 1 {
+							outputFile = filepath.Join(tempDir, baseName+".json")
+						} else {
+							outputFile = filepath.Join(tempDir, baseName+"-"+string(rune('0'+i))+".json")
 						}
-						
-						var policy Policy
-						err = json.Unmarshal(data, &policy)
-						if err != nil {
-							t.Errorf("Output file %s contains invalid JSON: %v", outputFile, err)
-							continue
+						if _, err := os.Stat(outputFile); err == nil {
+							foundOutput = true
+							
+							// Verify the output file is valid JSON
+							data, err := os.ReadFile(outputFile)
+							if err != nil {
+								t.Errorf("Failed to read output file %s: %v", outputFile, err)
+								continue
+							}
+							
+							var policy Policy
+							err = json.Unmarshal(data, &policy)
+							if err != nil {
+								t.Errorf("Output file %s contains invalid JSON: %v", outputFile, err)
+								continue
+							}
+							
+							// Verify structure
+							if policy.Version != config.SCPVersion {
+								t.Errorf("Output file %s has wrong version: expected %s, got %s", 
+									outputFile, config.SCPVersion, policy.Version)
+							}
 						}
-						
-						// Verify structure
-						if policy.Version != config.SCPVersion {
-							t.Errorf("Output file %s has wrong version: expected %s, got %s", 
-								outputFile, config.SCPVersion, policy.Version)
+					}
+				} else {
+					// Single file replacement: check that the original file was replaced
+					if len(files) > 0 {
+						outputFile := files[0]
+						if _, err := os.Stat(outputFile); err == nil {
+							foundOutput = true
+							
+							// Verify the output file is valid JSON
+							data, err := os.ReadFile(outputFile)
+							if err != nil {
+								t.Errorf("Failed to read output file %s: %v", outputFile, err)
+							} else {
+								var policy Policy
+								err = json.Unmarshal(data, &policy)
+								if err != nil {
+									t.Errorf("Output file %s contains invalid JSON: %v", outputFile, err)
+								} else if policy.Version != config.SCPVersion {
+									t.Errorf("Output file %s has wrong version: expected %s, got %s", 
+										outputFile, config.SCPVersion, policy.Version)
+								}
+							}
 						}
 					}
 				}
