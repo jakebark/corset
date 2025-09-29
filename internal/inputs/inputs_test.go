@@ -76,7 +76,6 @@ func TestUserInputStructure(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			userInput := UserInput{
 				Target:      tt.target,
-				Replace:     tt.replace,
 				Whitespace:  tt.whitespace,
 				IsDirectory: tt.isDirectory,
 				MaxFiles:    tt.maxFiles,

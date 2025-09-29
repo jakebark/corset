@@ -10,7 +10,6 @@ import (
 
 type UserInput struct {
 	Target      string
-	Replace     bool
 	Whitespace  bool
 	IsDirectory bool
 	MaxFiles    int
@@ -23,10 +22,8 @@ func isDirectory(target string) bool {
 }
 
 func ParseFlags() UserInput {
-	var replace bool
 	var whitespace bool
 
-	pflag.BoolVarP(&replace, "replace", "r", false, "replace old files")
 	pflag.BoolVarP(&whitespace, "whitespace", "w", false, "retain whitespace")
 	pflag.Parse()
 
@@ -36,7 +33,6 @@ func ParseFlags() UserInput {
 	target := pflag.Arg(0)
 	return UserInput{
 		Target:      target,
-		Replace:     replace,
 		Whitespace:  whitespace,
 		IsDirectory: isDirectory(target),
 		MaxFiles:    config.DefaultMaxFiles,

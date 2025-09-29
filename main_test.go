@@ -21,7 +21,6 @@ type Policy struct {
 type integrationTestCase struct {
 	name            string
 	whitespace      bool
-	replace         bool
 	isDirectory     bool
 	inputFiles      []string // testdata files to use
 	expectedFiles   int      // expected number of output files
@@ -36,7 +35,6 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Single small policy no whitespace",
 			whitespace:      false,
-			replace:         false,
 			isDirectory:     false,
 			inputFiles:      []string{"small_policy.json"},
 			expectedFiles:   1,
@@ -46,7 +44,6 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Single small policy with whitespace",
 			whitespace:      true,
-			replace:         false,
 			isDirectory:     false,
 			inputFiles:      []string{"small_policy.json"},
 			expectedFiles:   1,
@@ -56,7 +53,6 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Large policy forces split",
 			whitespace:      false,
-			replace:         false,
 			isDirectory:     false,
 			inputFiles:      []string{"very_large_policy.json"},
 			expectedFiles:   2, // Should split into multiple files
@@ -66,7 +62,6 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Directory with multiple files",
 			whitespace:      false,
-			replace:         false,
 			isDirectory:     true,
 			inputFiles:      []string{"policy1.json", "policy2.json", "policy3.json"},
 			expectedFiles:   1, // Should combine into one file
@@ -76,7 +71,6 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 		{
 			name:            "Policy integrity test - statements not cut",
 			whitespace:      false,
-			replace:         false,
 			isDirectory:     false,
 			inputFiles:      []string{"integrity_test.json"},
 			expectedFiles:   1, // Should fit in one file
@@ -105,7 +99,6 @@ func TestEndToEndPolicyProcessing(t *testing.T) {
 			// Create UserInput
 			userInput := inputs.UserInput{
 				Target:      targetPath,
-				Replace:     tt.replace,
 				Whitespace:  tt.whitespace,
 				IsDirectory: tt.isDirectory,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -204,12 +197,25 @@ func loadInputPolicies(t *testing.T, filenames []string) []Policy {
 func findOutputFiles(tempDir string, isDirectory bool, baseName string) []string {
 	var outputFiles []string
 
-	// Now all outputs use corset1.json, corset2.json, etc. regardless of input type
-	for i := 1; i <= 5; i++ {
-		outputFile := filepath.Join(tempDir, fmt.Sprintf("corset%d.json", i))
-		if _, err := os.Stat(outputFile); err == nil {
-			outputFiles = append(outputFiles, outputFile)
+	if isDirectory {
+		// Directory replacement: look for baseName.json, baseName-2.json, etc.
+		dirName := filepath.Base(tempDir)
+		for i := 1; i <= 5; i++ {
+			var outputFile string
+			if i == 1 {
+				outputFile = filepath.Join(tempDir, dirName+".json")
+			} else {
+				outputFile = filepath.Join(tempDir, fmt.Sprintf("%s-%d.json", dirName, i))
+			}
+			if _, err := os.Stat(outputFile); err == nil {
+				outputFiles = append(outputFiles, outputFile)
+			}
 		}
+	} else {
+		// Single file replacement: look for original filename (replaced in-place)
+		// Find any .json files in the directory (should be the replaced file)
+		files, _ := filepath.Glob(filepath.Join(tempDir, "*.json"))
+		outputFiles = append(outputFiles, files...)
 	}
 
 	return outputFiles

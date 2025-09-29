@@ -384,33 +384,20 @@ func TestReportResults(t *testing.T) {
 
 func TestReplaceInputFiles(t *testing.T) {
 	tests := []struct {
-		name         string
-		userInput    inputs.UserInput
-		shouldReplace bool
+		name      string
+		userInput inputs.UserInput
 	}{
 		{
-			name: "Replace single file",
+			name: "Always replace files",
 			userInput: inputs.UserInput{
-				Replace:     true,
 				IsDirectory: false,
 			},
-			shouldReplace: true,
 		},
 		{
-			name: "Replace directory files",
+			name: "Always replace directory files",
 			userInput: inputs.UserInput{
-				Replace:     true,
 				IsDirectory: true,
 			},
-			shouldReplace: true,
-		},
-		{
-			name: "No replace",
-			userInput: inputs.UserInput{
-				Replace:     false,
-				IsDirectory: false,
-			},
-			shouldReplace: false,
 		},
 	}
 
@@ -427,18 +414,15 @@ func TestReplaceInputFiles(t *testing.T) {
 			
 			inputFiles := []string{testFile}
 			
-			// Test the function
+			// Test the function - should always delete files
 			replaceInputFiles(tt.userInput, inputFiles)
 			
-			// Check if file still exists
+			// Check if file was deleted (replacement is now automatic)
 			_, err = os.Stat(testFile)
 			fileExists := !os.IsNotExist(err)
 			
-			if tt.shouldReplace && fileExists {
+			if fileExists {
 				t.Error("Expected file to be replaced (deleted), but it still exists")
-			}
-			if !tt.shouldReplace && !fileExists {
-				t.Error("Expected file to exist, but it was replaced (deleted)")
 			}
 		})
 	}
@@ -454,7 +438,6 @@ func TestWriteOutputFiles(t *testing.T) {
 		{
 			name: "Complete workflow test",
 			userInput: inputs.UserInput{
-				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 			},
@@ -511,7 +494,6 @@ func TestGenerateOutputFilename(t *testing.T) {
 		{
 			name: "Default naming convention",
 			userInput: inputs.UserInput{
-				Replace:     false,
 				IsDirectory: false,
 				Target:      "/path/to/file.json",
 			},
@@ -523,7 +505,6 @@ func TestGenerateOutputFilename(t *testing.T) {
 		{
 			name: "Single file replacement",
 			userInput: inputs.UserInput{
-				Replace:     true,
 				IsDirectory: false,
 				Target:      "/path/to/policy.json",
 			},
@@ -535,7 +516,6 @@ func TestGenerateOutputFilename(t *testing.T) {
 		{
 			name: "Directory replacement - first file",
 			userInput: inputs.UserInput{
-				Replace:     true,
 				IsDirectory: true,
 				Target:      "/path/to/organisation-scp",
 			},
@@ -547,7 +527,6 @@ func TestGenerateOutputFilename(t *testing.T) {
 		{
 			name: "Directory replacement - second file",
 			userInput: inputs.UserInput{
-				Replace:     true,
 				IsDirectory: true,
 				Target:      "/path/to/organisation-scp",
 			},

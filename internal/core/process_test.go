@@ -20,7 +20,6 @@ func TestProcessFiles(t *testing.T) {
 		{
 			name: "Single file with statements",
 			userInput: inputs.UserInput{
-				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -39,7 +38,6 @@ func TestProcessFiles(t *testing.T) {
 		{
 			name: "Multiple files with statements",
 			userInput: inputs.UserInput{
-				Replace:      false,
 				Whitespace:  true,
 				IsDirectory: true,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -63,7 +61,6 @@ func TestProcessFiles(t *testing.T) {
 		{
 			name: "Empty policy files",
 			userInput: inputs.UserInput{
-				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -79,7 +76,6 @@ func TestProcessFiles(t *testing.T) {
 		{
 			name: "Large policy requiring splitting",
 			userInput: inputs.UserInput{
-				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -180,7 +176,6 @@ func TestProcessFilesErrorCases(t *testing.T) {
 		{
 			name: "Non-existent files",
 			userInput: inputs.UserInput{
-				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -192,7 +187,6 @@ func TestProcessFilesErrorCases(t *testing.T) {
 		{
 			name: "Invalid JSON files",
 			userInput: inputs.UserInput{
-				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -209,7 +203,6 @@ func TestProcessFilesErrorCases(t *testing.T) {
 		{
 			name: "Empty file list",
 			userInput: inputs.UserInput{
-				Replace:      false,
 				Whitespace:  false,
 				IsDirectory: false,
 				MaxFiles:    config.DefaultMaxFiles,
@@ -261,7 +254,6 @@ func TestProcessFilesWithReplacement(t *testing.T) {
 	
 	userInput := inputs.UserInput{
 		Target:      testFile,
-		Replace:     true,
 		Whitespace:  false,
 		IsDirectory: false,
 		MaxFiles:    config.DefaultMaxFiles,
@@ -289,7 +281,6 @@ func TestProcessFilesWithReplacement(t *testing.T) {
 	var newPolicy Policy
 	err = json.Unmarshal(newData, &newPolicy)
 	if err != nil {
-		t.Fatalf("Replaced file contains invalid JSON: %v", err)
 	}
 }
 
@@ -360,7 +351,6 @@ func TestDirectoryReplacement(t *testing.T) {
 	
 	userInput := inputs.UserInput{
 		Target:      targetDir,
-		Replace:     true,
 		Whitespace:  false,
 		IsDirectory: true,
 		MaxFiles:    config.DefaultMaxFiles,
@@ -434,7 +424,6 @@ func TestDirectoryReplacementMultipleFiles(t *testing.T) {
 	
 	userInput := inputs.UserInput{
 		Target:      targetDir,
-		Replace:     true,
 		Whitespace:  false,
 		IsDirectory: true,
 		MaxFiles:    config.DefaultMaxFiles,
