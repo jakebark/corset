@@ -26,7 +26,6 @@ corset ./directory # run against a directory
 
 Optional flags
 ```bash
--r # efficiently repack into multiple files, each under 5120 characters 
 -w # dont remove the whitespace
 ```
 
