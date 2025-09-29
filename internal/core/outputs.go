@@ -12,15 +12,13 @@ import (
 
 func writeOutputFiles(userInput inputs.UserInput, packedFiles [][]Statement, inputFiles []string) {
 	outputDir := filepath.Dir(inputFiles[0])
-	
-	// For single file replacement, we need special handling to avoid deleting before writing
+
 	if !userInput.IsDirectory && len(inputFiles) == 1 {
-		// Single file replacement: write to the same file (overwrite)
+		// single file replacement, overwrite
 		results := writeAllPolicyFiles(userInput, packedFiles, outputDir, inputFiles)
 		reportResults(results)
-		// No need to delete - we overwrote the file
 	} else {
-		// Directory replacement
+		// directory replacement
 		results := writeAllPolicyFiles(userInput, packedFiles, outputDir, inputFiles)
 		reportResults(results)
 		replaceInputFiles(userInput, inputFiles)
@@ -43,25 +41,26 @@ func writeAllPolicyFiles(userInput inputs.UserInput, packedFiles [][]Statement, 
 
 func generateOutputFilename(userInput inputs.UserInput, outputDir string, fileNum int, inputFiles []string) string {
 	if !userInput.IsDirectory && len(inputFiles) == 1 {
-		// Single file replacement - use original filename, but add suffix for splits
+		// single file, use original name
 		originalFile := inputFiles[0]
 		if fileNum == 1 {
 			return originalFile
 		}
-		// For splits, add -2, -3, etc. to the filename (before .json extension)
+		// add numeric suffix for splits
 		ext := filepath.Ext(originalFile)
 		nameWithoutExt := originalFile[:len(originalFile)-len(ext)]
 		return fmt.Sprintf("%s-%d%s", nameWithoutExt, fileNum, ext)
+
 	} else if userInput.IsDirectory {
-		// Directory replacement - use target as base name with number suffix
+		// use target as base name, add numeric suffix for splits
 		baseName := filepath.Base(userInput.Target)
 		if fileNum == 1 {
 			return filepath.Join(outputDir, baseName+".json")
 		}
 		return filepath.Join(outputDir, fmt.Sprintf("%s-%d.json", baseName, fileNum))
 	}
-	
-	// Fallback to default corset naming convention
+
+	// fallback to default naming convention
 	return filepath.Join(outputDir, fmt.Sprintf("corset%d.json", fileNum))
 }
 
@@ -98,7 +97,6 @@ func writeOutputFile(userInput inputs.UserInput, filename string, statements []S
 }
 
 func replaceInputFiles(userInput inputs.UserInput, inputFiles []string) {
-	// Always replace/delete input files since replacement is now automatic
 	for _, inputFile := range inputFiles {
 		os.Remove(inputFile)
 	}
