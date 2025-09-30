@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestExtractIndividualPolicies(t *testing.T) {
+func TestExtractIndividualStatements(t *testing.T) {
 	tests := []struct {
 		name               string
 		policy             Policy
@@ -94,7 +94,7 @@ func TestExtractIndividualPolicies(t *testing.T) {
 			}
 
 			// Test the function
-			statements := extractIndividualPolicies(testFile)
+			statements := extractIndividualStatements(testFile)
 
 			if len(statements) != tt.expectedStatements {
 				t.Errorf("Expected %d statements, got %d", tt.expectedStatements, len(statements))
@@ -215,7 +215,7 @@ func TestExtractAllStatements(t *testing.T) {
 	}
 }
 
-func TestExtractIndividualPoliciesInvalidFile(t *testing.T) {
+func TestExtractIndividualStatementsInvalidFile(t *testing.T) {
 	tempDir := t.TempDir()
 
 	tests := []struct {
@@ -254,7 +254,7 @@ func TestExtractIndividualPoliciesInvalidFile(t *testing.T) {
 			}
 
 			// Should not panic, should handle gracefully
-			statements := extractIndividualPolicies(testFile)
+			statements := extractIndividualStatements(testFile)
 
 			if len(statements) != tt.expected {
 				t.Errorf("Expected %d statements, got %d", tt.expected, len(statements))
@@ -279,4 +279,3 @@ func mapsEqual(a, b map[string]interface{}) bool {
 
 	return true
 }
-
