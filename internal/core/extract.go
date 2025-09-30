@@ -8,13 +8,13 @@ import (
 func extractAllStatements(files []string) []Statement {
 	var allStatements []Statement
 	for _, file := range files {
-		statements := extractIndividualPolicies(file)
+		statements := extractIndividualStatements(file)
 		allStatements = append(allStatements, statements...)
 	}
 	return allStatements
 }
 
-func extractIndividualPolicies(filename string) []Statement {
+func extractIndividualStatements(filename string) []Statement {
 	data, _ := os.ReadFile(filename)
 
 	var policy Policy
