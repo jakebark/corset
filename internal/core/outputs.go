@@ -15,17 +15,17 @@ func buildOutput(userInput inputs.UserInput, packedFiles [][]Statement, inputFil
 
 	if !userInput.IsDirectory && len(inputFiles) == 1 {
 		// single file replacement, overwrite
-		results := orchestrateFiles(userInput, packedFiles, outputDir, inputFiles)
+		results := orchestrateOutputFiles(userInput, packedFiles, outputDir, inputFiles)
 		reportResults(results)
 	} else {
 		// directory replacement
-		results := orchestrateFiles(userInput, packedFiles, outputDir, inputFiles)
+		results := orchestrateOutputFiles(userInput, packedFiles, outputDir, inputFiles)
 		reportResults(results)
 		replaceInputFiles(userInput, inputFiles)
 	}
 }
 
-func orchestrateFiles(userInput inputs.UserInput, packedFiles [][]Statement, outputDir string, inputFiles []string) []WriteResult {
+func orchestrateOutputFiles(userInput inputs.UserInput, packedFiles [][]Statement, outputDir string, inputFiles []string) []WriteResult {
 	var results []WriteResult
 	for i, statements := range packedFiles {
 		filename := generateOutputFilename(userInput, outputDir, i+1, inputFiles)
