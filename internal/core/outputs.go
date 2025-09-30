@@ -65,12 +65,12 @@ func generateOutputFilename(userInput inputs.UserInput, outputDir string, fileNu
 }
 
 func writeOutputFile(userInput inputs.UserInput, filename string, statements []Statement) int {
-	data := createPolicyJSON(userInput, statements)
+	data := writeJSON(userInput, statements)
 	os.WriteFile(filename, data, 0644)
 	return len(data)
 }
 
-func createPolicyJSON(userInput inputs.UserInput, statements []Statement) []byte {
+func writeJSON(userInput inputs.UserInput, statements []Statement) []byte {
 	policy := Policy{
 		Version:   config.SCPVersion,
 		Statement: make([]map[string]interface{}, len(statements)),
