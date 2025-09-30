@@ -64,14 +64,6 @@ func generateOutputFilename(userInput inputs.UserInput, outputDir string, fileNu
 	return filepath.Join(outputDir, fmt.Sprintf("corset%d.json", fileNum))
 }
 
-func reportResults(results []WriteResult) {
-	fmt.Printf("Split into %d files:\n", len(results))
-	for _, result := range results {
-		fmt.Printf("- %s (%d characters, %d statements)\n",
-			filepath.Base(result.Filename), result.Size, result.Statements)
-	}
-}
-
 func writeOutputFile(userInput inputs.UserInput, filename string, statements []Statement) int {
 	data := createPolicyJSON(userInput, statements)
 	os.WriteFile(filename, data, 0644)
@@ -94,6 +86,14 @@ func createPolicyJSON(userInput inputs.UserInput, statements []Statement) []byte
 	}
 	data, _ := json.Marshal(policy)
 	return data
+}
+
+func reportResults(results []WriteResult) {
+	fmt.Printf("Split into %d files:\n", len(results))
+	for _, result := range results {
+		fmt.Printf("- %s (%d characters, %d statements)\n",
+			filepath.Base(result.Filename), result.Size, result.Statements)
+	}
 }
 
 func replaceInputFiles(userInput inputs.UserInput, inputFiles []string) {
