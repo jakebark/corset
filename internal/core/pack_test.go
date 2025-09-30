@@ -70,27 +70,27 @@ func TestPackAllStatements(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := packAllStatements(tt.userInput, tt.statements)
-			
+
 			if tt.expectNil && result != nil {
 				t.Errorf("Expected nil result, got %v", result)
 				return
 			}
-			
+
 			if !tt.expectNil && result == nil {
 				t.Errorf("Expected non-nil result, got nil")
 				return
 			}
-			
+
 			if len(result) != tt.expectedFiles {
 				t.Errorf("Expected %d files, got %d", tt.expectedFiles, len(result))
 			}
-			
+
 			// Verify all statements are included
 			totalStatements := 0
 			for _, file := range result {
 				totalStatements += len(file)
 			}
-			
+
 			if totalStatements != len(tt.statements) {
 				t.Errorf("Expected %d total statements, got %d", len(tt.statements), totalStatements)
 			}
@@ -178,34 +178,34 @@ func TestPackPolicies(t *testing.T) {
 			userInput := inputs.UserInput{
 				MaxFiles: tt.maxFiles,
 			}
-			
-			result := packPolicies(userInput, tt.statements, tt.baseSize)
-			
+
+			result := packStatements(userInput, tt.statements, tt.baseSize)
+
 			if tt.expectNil && result != nil {
 				t.Errorf("Expected nil result, got %v", result)
 				return
 			}
-			
+
 			if !tt.expectNil && result == nil {
 				t.Errorf("Expected non-nil result, got nil")
 				return
 			}
-			
+
 			if result != nil {
 				if len(result) != tt.expectedFiles {
 					t.Errorf("Expected %d files, got %d", tt.expectedFiles, len(result))
 				}
-				
+
 				// Verify all statements are included
 				totalStatements := 0
 				for _, file := range result {
 					totalStatements += len(file)
 				}
-				
+
 				if totalStatements != len(tt.statements) {
 					t.Errorf("Expected %d total statements, got %d", len(tt.statements), totalStatements)
 				}
-				
+
 				// Verify no file exceeds the maximum size
 				for i, file := range result {
 					totalSize := tt.baseSize
@@ -215,7 +215,7 @@ func TestPackPolicies(t *testing.T) {
 							totalSize += 1 // comma separator
 						}
 					}
-					
+
 					if totalSize > config.MaxPolicySize {
 						t.Errorf("File %d exceeds maximum size: %d > %d", i, totalSize, config.MaxPolicySize)
 					}
@@ -232,23 +232,23 @@ func TestPackPoliciesSorting(t *testing.T) {
 		{Content: map[string]interface{}{"name": "medium"}, Size: 500},
 		{Content: map[string]interface{}{"name": "tiny"}, Size: 50},
 	}
-	
+
 	userInput := inputs.UserInput{
 		MaxFiles: 5,
 	}
-	
-	result := packPolicies(userInput, statements, 50)
-	
+
+	result := packStatements(userInput, statements, 50)
+
 	if len(result) == 0 {
 		t.Fatal("Expected at least one file")
 	}
-	
+
 	// First file should contain the largest statement first
 	firstFile := result[0]
 	if len(firstFile) == 0 {
 		t.Fatal("Expected first file to contain statements")
 	}
-	
+
 	// The largest statement (size 1000) should be placed first
 	if firstFile[0].Size != 1000 {
 		t.Errorf("Expected largest statement (1000) to be first, got size %d", firstFile[0].Size)
@@ -263,18 +263,18 @@ func TestPackPoliciesBinPacking(t *testing.T) {
 		{Content: map[string]interface{}{"id": "3"}, Size: 1000},
 		{Content: map[string]interface{}{"id": "4"}, Size: 1000},
 	}
-	
+
 	userInput := inputs.UserInput{
 		MaxFiles: 5,
 	}
-	
-	result := packPolicies(userInput, statements, 100)
-	
+
+	result := packStatements(userInput, statements, 100)
+
 	if len(result) != 2 {
 		t.Errorf("Expected optimal packing into 2 files, got %d", len(result))
 	}
-	
-	// Verify efficient packing: 
+
+	// Verify efficient packing:
 	// File 1: 2000 + 1000 + 1000 = 4000 + 100 (base) + 2 (separators) = 4102
 	// File 2: 2000 + 100 (base) = 2100
 	if len(result) >= 2 {
@@ -285,7 +285,7 @@ func TestPackPoliciesBinPacking(t *testing.T) {
 				file1Size += 1 // separator
 			}
 		}
-		
+
 		file2Size := 100 // base size
 		for i, stmt := range result[1] {
 			file2Size += stmt.Size
@@ -293,7 +293,7 @@ func TestPackPoliciesBinPacking(t *testing.T) {
 				file2Size += 1 // separator
 			}
 		}
-		
+
 		// Both files should be under the limit
 		if file1Size > config.MaxPolicySize {
 			t.Errorf("File 1 exceeds limit: %d > %d", file1Size, config.MaxPolicySize)
@@ -303,3 +303,4 @@ func TestPackPoliciesBinPacking(t *testing.T) {
 		}
 	}
 }
+
