@@ -475,11 +475,11 @@ func TestWriteOutputFiles(t *testing.T) {
 			// Test the function - should not panic
 			defer func() {
 				if r := recover(); r != nil {
-					t.Errorf("writeOutputFiles panicked: %v", r)
+					t.Errorf("buildOutput panicked: %v", r)
 				}
 			}()
 
-			writeOutputFiles(tt.userInput, tt.packedFiles, tt.inputFiles)
+			buildOutput(tt.userInput, tt.packedFiles, tt.inputFiles)
 
 			// Verify output files were created - with automatic replacement, check the input file was replaced
 			if _, err := os.Stat(inputFile); os.IsNotExist(err) {

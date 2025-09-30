@@ -13,5 +13,5 @@ func ProcessFiles(userInput inputs.UserInput, files []string) {
 	}
 
 	packedFiles := packAllStatements(userInput, allStatements)
-	writeOutputFiles(userInput, packedFiles, files)
+	buildOutput(userInput, packedFiles, files)
 }
