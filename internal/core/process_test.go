@@ -12,13 +12,13 @@ import (
 
 func TestProcessFiles(t *testing.T) {
 	tests := []struct {
-		name      string
-		userInput inputs.UserInput
-		policies  []Policy
+		name         string
+		userInput    inputs.UserInput
+		policies     []Policy
 		expectOutput bool
 	}{
 		{
-			name: "Single file with statements",
+			name: "single file",
 			userInput: inputs.UserInput{
 				Whitespace:  false,
 				IsDirectory: false,
@@ -36,7 +36,7 @@ func TestProcessFiles(t *testing.T) {
 			expectOutput: true,
 		},
 		{
-			name: "Multiple files with statements",
+			name: "multiple files",
 			userInput: inputs.UserInput{
 				Whitespace:  true,
 				IsDirectory: true,
@@ -59,7 +59,7 @@ func TestProcessFiles(t *testing.T) {
 			expectOutput: true,
 		},
 		{
-			name: "Empty policy files",
+			name: "single file, no policies",
 			userInput: inputs.UserInput{
 				Whitespace:  false,
 				IsDirectory: false,
@@ -74,7 +74,7 @@ func TestProcessFiles(t *testing.T) {
 			expectOutput: false,
 		},
 		{
-			name: "Large policy requiring splitting",
+			name: "single file, split required",
 			userInput: inputs.UserInput{
 				Whitespace:  false,
 				IsDirectory: false,
@@ -82,7 +82,7 @@ func TestProcessFiles(t *testing.T) {
 			},
 			policies: []Policy{
 				{
-					Version: "2012-10-17",
+					Version:   "2012-10-17",
 					Statement: createLargeStatements(20), // Large enough to require splitting
 				},
 			},
@@ -94,7 +94,7 @@ func TestProcessFiles(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tempDir := t.TempDir()
 			var files []string
-			
+
 			// Create test files
 			for i, policy := range tt.policies {
 				filename := filepath.Join(tempDir, "policy_"+string(rune('a'+i))+".json")
@@ -102,14 +102,14 @@ func TestProcessFiles(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Failed to marshal test policy %d: %v", i, err)
 				}
-				
+
 				err = os.WriteFile(filename, data, 0644)
 				if err != nil {
 					t.Fatalf("Failed to write test file %d: %v", i, err)
 				}
 				files = append(files, filename)
 			}
-			
+
 			// Set target for userInput
 			if len(files) > 0 {
 				if tt.userInput.IsDirectory {
@@ -118,20 +118,20 @@ func TestProcessFiles(t *testing.T) {
 					tt.userInput.Target = files[0]
 				}
 			}
-			
+
 			// Test the function - should not panic
 			defer func() {
 				if r := recover(); r != nil {
 					t.Errorf("ProcessFiles panicked: %v", r)
 				}
 			}()
-			
+
 			ProcessFiles(tt.userInput, files)
-			
+
 			if tt.expectOutput {
 				// Check that output files were created - with automatic replacement they should be in-place or directory-named
 				foundOutput := false
-				
+
 				if tt.userInput.IsDirectory {
 					// Directory replacement: check for directory-named files
 					baseName := filepath.Base(tempDir)
@@ -144,24 +144,24 @@ func TestProcessFiles(t *testing.T) {
 						}
 						if _, err := os.Stat(outputFile); err == nil {
 							foundOutput = true
-							
+
 							// Verify the output file is valid JSON
 							data, err := os.ReadFile(outputFile)
 							if err != nil {
 								t.Errorf("Failed to read output file %s: %v", outputFile, err)
 								continue
 							}
-							
+
 							var policy Policy
 							err = json.Unmarshal(data, &policy)
 							if err != nil {
 								t.Errorf("Output file %s contains invalid JSON: %v", outputFile, err)
 								continue
 							}
-							
+
 							// Verify structure
 							if policy.Version != config.SCPVersion {
-								t.Errorf("Output file %s has wrong version: expected %s, got %s", 
+								t.Errorf("Output file %s has wrong version: expected %s, got %s",
 									outputFile, config.SCPVersion, policy.Version)
 							}
 						}
@@ -172,7 +172,7 @@ func TestProcessFiles(t *testing.T) {
 						outputFile := files[0]
 						if _, err := os.Stat(outputFile); err == nil {
 							foundOutput = true
-							
+
 							// Verify the output file is valid JSON
 							data, err := os.ReadFile(outputFile)
 							if err != nil {
@@ -183,14 +183,14 @@ func TestProcessFiles(t *testing.T) {
 								if err != nil {
 									t.Errorf("Output file %s contains invalid JSON: %v", outputFile, err)
 								} else if policy.Version != config.SCPVersion {
-									t.Errorf("Output file %s has wrong version: expected %s, got %s", 
+									t.Errorf("Output file %s has wrong version: expected %s, got %s",
 										outputFile, config.SCPVersion, policy.Version)
 								}
 							}
 						}
 					}
 				}
-				
+
 				if !foundOutput {
 					t.Error("Expected output files to be created, but none were found")
 				}
@@ -250,14 +250,14 @@ func TestProcessFilesErrorCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tempDir := t.TempDir()
 			files := tt.setupFunc(t, tempDir)
-			
+
 			// Should not panic, should handle gracefully
 			defer func() {
 				if r := recover(); r != nil {
 					t.Errorf("ProcessFiles panicked on error case: %v", r)
 				}
 			}()
-			
+
 			ProcessFiles(tt.userInput, files)
 		})
 	}
@@ -265,7 +265,7 @@ func TestProcessFilesErrorCases(t *testing.T) {
 
 func TestProcessFilesWithReplacement(t *testing.T) {
 	tempDir := t.TempDir()
-	
+
 	// Create test file
 	testFile := filepath.Join(tempDir, "test.json")
 	policy := Policy{
@@ -274,43 +274,43 @@ func TestProcessFilesWithReplacement(t *testing.T) {
 			{"Effect": "Allow", "Action": "s3:GetObject", "Resource": "*"},
 		},
 	}
-	
+
 	data, err := json.MarshalIndent(policy, "", "  ")
 	if err != nil {
 		t.Fatalf("Failed to marshal test policy: %v", err)
 	}
-	
+
 	err = os.WriteFile(testFile, data, 0644)
 	if err != nil {
 		t.Fatalf("Failed to write test file: %v", err)
 	}
-	
+
 	userInput := inputs.UserInput{
 		Target:      testFile,
 		Whitespace:  false,
 		IsDirectory: false,
 		MaxFiles:    config.DefaultMaxFiles,
 	}
-	
+
 	ProcessFiles(userInput, []string{testFile})
-	
+
 	// Verify original file was replaced (should still exist with new content)
 	if _, err := os.Stat(testFile); os.IsNotExist(err) {
 		t.Error("Expected original file to be replaced, but it doesn't exist")
 	}
-	
+
 	// For single file replacement, no separate corset1.json should be created
 	outputFile := filepath.Join(tempDir, "corset1.json")
 	if _, err := os.Stat(outputFile); err == nil {
 		t.Error("Expected no separate corset1.json file for single file replacement")
 	}
-	
+
 	// Verify the content of the replaced file is valid JSON
 	newData, err := os.ReadFile(testFile)
 	if err != nil {
 		t.Fatalf("Failed to read replaced file: %v", err)
 	}
-	
+
 	var newPolicy Policy
 	err = json.Unmarshal(newData, &newPolicy)
 	if err != nil {
@@ -325,7 +325,7 @@ func createLargeStatements(count int) []map[string]interface{} {
 			"Sid":    "Statement" + string(rune('0'+i)),
 			"Effect": "Allow",
 			"Action": []string{
-				"s3:GetObject", "s3:PutObject", "s3:DeleteObject", 
+				"s3:GetObject", "s3:PutObject", "s3:DeleteObject",
 				"s3:ListBucket", "s3:GetBucketLocation",
 			},
 			"Resource": []string{
@@ -343,14 +343,14 @@ func createLargeStatements(count int) []map[string]interface{} {
 }
 func TestDirectoryReplacement(t *testing.T) {
 	tempDir := t.TempDir()
-	
+
 	// Create a subdirectory with a specific name
 	targetDir := filepath.Join(tempDir, "organisation-scp")
 	err := os.MkdirAll(targetDir, 0755)
 	if err != nil {
 		t.Fatalf("Failed to create target directory: %v", err)
 	}
-	
+
 	// Create multiple test files
 	policies := []Policy{
 		{
@@ -366,7 +366,7 @@ func TestDirectoryReplacement(t *testing.T) {
 			},
 		},
 	}
-	
+
 	var inputFiles []string
 	for i, policy := range policies {
 		filename := filepath.Join(targetDir, "policy-"+string(rune('a'+i))+".json")
@@ -374,54 +374,54 @@ func TestDirectoryReplacement(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to marshal test policy %d: %v", i, err)
 		}
-		
+
 		err = os.WriteFile(filename, data, 0644)
 		if err != nil {
 			t.Fatalf("Failed to write test file %d: %v", i, err)
 		}
 		inputFiles = append(inputFiles, filename)
 	}
-	
+
 	userInput := inputs.UserInput{
 		Target:      targetDir,
 		Whitespace:  false,
 		IsDirectory: true,
 		MaxFiles:    config.DefaultMaxFiles,
 	}
-	
+
 	ProcessFiles(userInput, inputFiles)
-	
+
 	// Verify original files were deleted
 	for _, file := range inputFiles {
 		if _, err := os.Stat(file); !os.IsNotExist(err) {
 			t.Errorf("Expected original file %s to be deleted", file)
 		}
 	}
-	
+
 	// Verify new files with correct naming
 	expectedFile := filepath.Join(targetDir, "organisation-scp.json")
 	if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
 		t.Errorf("Expected output file %s to be created", expectedFile)
 	}
-	
+
 	// Verify no corset files were created
 	corsetFile := filepath.Join(targetDir, "corset1.json")
 	if _, err := os.Stat(corsetFile); err == nil {
 		t.Error("Expected no corset1.json file for directory replacement")
 	}
-	
+
 	// Verify content is valid
 	data, err := os.ReadFile(expectedFile)
 	if err != nil {
 		t.Fatalf("Failed to read output file: %v", err)
 	}
-	
+
 	var combinedPolicy Policy
 	err = json.Unmarshal(data, &combinedPolicy)
 	if err != nil {
 		t.Fatalf("Output file contains invalid JSON: %v", err)
 	}
-	
+
 	// Should have combined statements from both input files
 	if len(combinedPolicy.Statement) != 2 {
 		t.Errorf("Expected 2 combined statements, got %d", len(combinedPolicy.Statement))
@@ -430,63 +430,63 @@ func TestDirectoryReplacement(t *testing.T) {
 
 func TestDirectoryReplacementMultipleFiles(t *testing.T) {
 	tempDir := t.TempDir()
-	
+
 	// Create a subdirectory
 	targetDir := filepath.Join(tempDir, "large-policies")
 	err := os.MkdirAll(targetDir, 0755)
 	if err != nil {
 		t.Fatalf("Failed to create target directory: %v", err)
 	}
-	
+
 	// Create a policy large enough to require splitting
 	largePolicy := Policy{
 		Version:   "2012-10-17",
 		Statement: createLargeStatements(15), // Should require splitting
 	}
-	
+
 	inputFile := filepath.Join(targetDir, "large.json")
 	data, err := json.MarshalIndent(largePolicy, "", "  ")
 	if err != nil {
 		t.Fatalf("Failed to marshal large policy: %v", err)
 	}
-	
+
 	err = os.WriteFile(inputFile, data, 0644)
 	if err != nil {
 		t.Fatalf("Failed to write large policy file: %v", err)
 	}
-	
+
 	userInput := inputs.UserInput{
 		Target:      targetDir,
 		Whitespace:  false,
 		IsDirectory: true,
 		MaxFiles:    config.DefaultMaxFiles,
 	}
-	
+
 	ProcessFiles(userInput, []string{inputFile})
-	
+
 	// Verify original file was deleted
 	if _, err := os.Stat(inputFile); !os.IsNotExist(err) {
 		t.Error("Expected original large file to be deleted")
 	}
-	
+
 	// Verify multiple output files with correct naming
 	expectedFiles := []string{
-		filepath.Join(targetDir, "large-policies.json"),     // First file
-		filepath.Join(targetDir, "large-policies-2.json"),  // Second file
+		filepath.Join(targetDir, "large-policies.json"),   // First file
+		filepath.Join(targetDir, "large-policies-2.json"), // Second file
 	}
-	
+
 	foundFiles := 0
 	for _, expectedFile := range expectedFiles {
 		if _, err := os.Stat(expectedFile); err == nil {
 			foundFiles++
-			
+
 			// Verify content is valid
 			data, err := os.ReadFile(expectedFile)
 			if err != nil {
 				t.Errorf("Failed to read output file %s: %v", expectedFile, err)
 				continue
 			}
-			
+
 			var policy Policy
 			err = json.Unmarshal(data, &policy)
 			if err != nil {
@@ -494,11 +494,11 @@ func TestDirectoryReplacementMultipleFiles(t *testing.T) {
 			}
 		}
 	}
-	
+
 	if foundFiles < 2 {
 		t.Errorf("Expected at least 2 output files, found %d", foundFiles)
 	}
-	
+
 	// Verify no corset files were created
 	corsetFile := filepath.Join(targetDir, "corset1.json")
 	if _, err := os.Stat(corsetFile); err == nil {
