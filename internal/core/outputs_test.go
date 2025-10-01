@@ -90,7 +90,7 @@ func TestCreatePolicyJSON(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			data := createPolicyJSON(tt.userInput, tt.statements)
+			data := writeJSON(tt.userInput, tt.statements)
 
 			// Verify it's valid JSON
 			var policy Policy
@@ -296,7 +296,7 @@ func TestWriteAllPolicyFiles(t *testing.T) {
 
 			// Create mock input files for testing
 			inputFiles := []string{filepath.Join(outputDir, "input.json")}
-			results := writeAllPolicyFiles(tt.userInput, tt.packedFiles, outputDir, inputFiles)
+			results := orchestrateOutputFiles(tt.userInput, tt.packedFiles, outputDir, inputFiles)
 
 			if len(results) != tt.expected {
 				t.Errorf("Expected %d results, got %d", tt.expected, len(results))

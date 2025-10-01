@@ -12,10 +12,10 @@ func packAllStatements(userInput inputs.UserInput, statements []Statement) [][]S
 	if userInput.Whitespace {
 		baseSize = config.SCPBaseSizeWithWS
 	}
-	return packPolicies(userInput, statements, baseSize)
+	return packStatements(userInput, statements, baseSize)
 }
 
-func packPolicies(userInput inputs.UserInput, statements []Statement, baseSize int) [][]Statement {
+func packStatements(userInput inputs.UserInput, statements []Statement, baseSize int) [][]Statement {
 	sort.Slice(statements, func(i, j int) bool {
 		return statements[i].Size > statements[j].Size
 	})

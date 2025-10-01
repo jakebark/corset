@@ -11,7 +11,14 @@ import (
 )
 
 func buildOutput(userInput inputs.UserInput, packedFiles [][]Statement, inputFiles []string) {
-	outputDir := filepath.Dir(inputFiles[0])
+	var outputDir string
+	if userInput.IsDirectory {
+		// For directory replacement, output to the target directory itself
+		outputDir = userInput.Target
+	} else {
+		// For single file replacement, output to the same directory as the input file
+		outputDir = filepath.Dir(inputFiles[0])
+	}
 
 	if !userInput.IsDirectory && len(inputFiles) == 1 {
 		// single file replacement, overwrite
