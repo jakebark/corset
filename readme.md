@@ -2,10 +2,10 @@
 
 Squeeeeeze JSON to fit SCP limits.
 
-Corset can: 
+Corset will: 
 
 1. Remove whitepace from a JSON File (SCP, RCP, etc)
-2. Unpack and pack policies efficiently across multiple files
+2. Unpack and pack policy statements efficiently across multiple files
 
 ... all to bring them under the magical 5120 character limit. 
 
